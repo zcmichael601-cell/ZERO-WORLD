@@ -1,0 +1,4 @@
+# 购物导购项目有独立 git 仓库，单独同步
+shopping-guide-demo/
+
+.DS_Store
