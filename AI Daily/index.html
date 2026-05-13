@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 资讯日报</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <span class="site-logo">✦</span>
+        <span class="site-title">AI 资讯日报</span>
+      </div>
+      <div class="header-right">
+        <span class="header-date" id="header-date"></span>
+        <button class="export-btn" onclick="exportLinks()">导出原文链接</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tab-bar-wrap">
+    <nav class="tab-bar">
+      <button class="tab active" data-platform="all">
+        <span class="tab-icon">全部</span>
+        <span class="tab-count" id="count-all"></span>
+      </button>
+      <button class="tab" data-platform="youtube">
+        <span class="tab-icon platform-icon youtube">▶</span>YouTube
+        <span class="tab-count" id="count-youtube"></span>
+      </button>
+      <button class="tab" data-platform="x">
+        <span class="tab-icon platform-icon x">𝕏</span>X
+        <span class="tab-count" id="count-x"></span>
+      </button>
+      <button class="tab" data-platform="podcast">
+        <span class="tab-icon platform-icon podcast">🎙</span>Podcast
+        <span class="tab-count" id="count-podcast"></span>
+      </button>
+      <button class="tab" data-platform="douyin">
+        <span class="tab-icon platform-icon douyin">♪</span>抖音
+        <span class="tab-count" id="count-douyin"></span>
+      </button>
+      <button class="tab" data-platform="xiaohongshu">
+        <span class="tab-icon platform-icon xiaohongshu">✿</span>小红书
+        <span class="tab-count" id="count-xiaohongshu"></span>
+      </button>
+    </nav>
+  </div>
+
+  <main class="main-content">
+    <div class="cards-grid" id="cards-container"></div>
+    <div class="empty-state" id="empty-state" style="display:none">
+      <p>该平台暂无今日内容</p>
+    </div>
+  </main>
+
+  <!-- 思考弹窗 -->
+  <div class="modal-overlay" id="thought-modal" onclick="closeModal(event)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">我的思考</h3>
+        <button class="modal-close" onclick="closeThoughtModal()">✕</button>
+      </div>
+      <p class="modal-subtitle" id="modal-item-title"></p>
+      <textarea
+        class="thought-textarea"
+        id="thought-input"
+        placeholder="记录你对这条内容的思考、联系或行动计划…"
+        rows="7"
+      ></textarea>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeThoughtModal()">取消</button>
+        <button class="btn-primary" onclick="saveThought()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- mock-data.js 是示例数据；live-data.js 由采集脚本生成后自动覆盖显示 -->
+  <script src="data/mock-data.js"></script>
+  <script src="data/live-data.js" onerror=""></script>
+  <script>
+    // 优先使用真实采集数据
+    if (typeof AI_DIGEST_DATA_LIVE !== 'undefined' && AI_DIGEST_DATA_LIVE.length) {
+      AI_DIGEST_DATA = AI_DIGEST_DATA_LIVE;
+    }
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>

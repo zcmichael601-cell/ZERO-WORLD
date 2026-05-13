@@ -1,0 +1,10 @@
+#!/bin/sh
+'''exec' "/Users/zhaochen10/Library/Application Support/com.jd.me/data/ee/zhaochen10/file/ZC的AI项目/AI Daily/backend/.venv/bin/python3" "$0" "$@"
+' '''
+# -*- coding: utf-8 -*-
+import re
+import sys
+from distro.distro import main
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(main())

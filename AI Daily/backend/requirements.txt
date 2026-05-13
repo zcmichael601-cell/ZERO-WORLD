@@ -1,0 +1,8 @@
+anthropic>=0.25.0
+feedparser>=6.0.11
+google-api-python-client>=2.100.0
+youtube-transcript-api>=0.6.2
+python-dotenv>=1.0.0
+requests>=2.31.0
+# 可选：音视频转录（Apple Silicon 优化版）
+# faster-whisper>=1.0.0
