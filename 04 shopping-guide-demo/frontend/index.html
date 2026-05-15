@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>购物助手</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- 桌面背景 -->
+  <div class="desktop-bg">
+
+    <!-- 手机外壳 -->
+    <div class="phone-frame">
+      <div class="phone-screen">
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+          <span class="status-time" id="statusTime">9:41</span>
+          <div class="status-icons">
+            <span class="material-icons-round">signal_cellular_alt</span>
+            <span class="material-icons-round">wifi</span>
+            <span class="material-icons-round">battery_full</span>
+          </div>
+        </div>
+
+        <!-- ══ 页面：聊天 ══════════════════════════════ -->
+        <div class="page active" id="page-chat">
+
+          <header class="app-header">
+            <div class="app-header-left">
+              <span class="header-star">✦</span>
+              <span class="header-title">购物助手</span>
+            </div>
+            <div class="app-header-right">
+              <button class="icon-btn" id="newChatBtn" title="新对话">
+                <span class="material-icons-round">edit_note</span>
+              </button>
+            </div>
+          </header>
+
+          <!-- 欢迎屏 -->
+          <div class="welcome" id="welcome">
+            <div class="welcome-star">✦</div>
+            <div class="welcome-greeting">你好，今天想买什么？</div>
+            <div class="welcome-sub">我会结合搜索和 AI，帮你找到最合适的商品</div>
+            <div class="suggestion-grid">
+              <button class="sg-card" onclick="sendChip('推荐一部拍照好的手机，预算4000')">
+                <span class="material-icons-round sg-icon">photo_camera</span>
+                <span>拍照好的手机</span>
+              </button>
+              <button class="sg-card" onclick="sendChip('通勤用的降噪耳机推荐')">
+                <span class="material-icons-round sg-icon">headphones</span>
+                <span>通勤降噪耳机</span>
+              </button>
+              <button class="sg-card" onclick="sendChip('3000以内的笔记本推荐')">
+                <span class="material-icons-round sg-icon">laptop</span>
+                <span>3000内笔记本</span>
+              </button>
+              <button class="sg-card" onclick="sendChip('iPhone和小米旗舰怎么选？')">
+                <span class="material-icons-round sg-icon">compare</span>
+                <span>手机对比</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 消息列表 -->
+          <div class="chat-window" id="chatWindow"></div>
+
+          <!-- 输入区 -->
+          <div class="chat-footer">
+            <div class="chips-row">
+              <button class="chip" onclick="sendChip('我想买手机')">📱 手机</button>
+              <button class="chip" onclick="sendChip('我想买耳机')">🎧 耳机</button>
+              <button class="chip" onclick="sendChip('我想买电脑')">💻 电脑</button>
+              <button class="chip" onclick="sendChip('3000以内好物')">💰 3000内</button>
+            </div>
+            <div class="composer">
+              <textarea id="userInput" class="composer-input" placeholder="发消息..." rows="1"></textarea>
+              <button class="send-btn" id="sendBtn" disabled>
+                <span class="material-icons-round">arrow_upward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ 页面：发现 ══════════════════════════════ -->
+        <div class="page" id="page-discover">
+          <header class="app-header">
+            <span class="header-title">发现好物</span>
+            <div class="app-header-right">
+              <button class="icon-btn"><span class="material-icons-round">search</span></button>
+            </div>
+          </header>
+          <div class="discover-body">
+            <div class="discover-banner">
+              <div class="banner-text">
+                <div class="banner-tag">精选推荐</div>
+                <div class="banner-title">双十一爆款清单</div>
+                <div class="banner-sub">AI 为你精选 100+ 好物</div>
+              </div>
+              <div class="banner-emoji">🛒</div>
+            </div>
+            <div class="section-title">热门品类</div>
+            <div class="category-grid">
+              <div class="cat-item" onclick="goChat('我想买手机')"><span>📱</span><span>手机</span></div>
+              <div class="cat-item" onclick="goChat('我想买电脑')"><span>💻</span><span>电脑</span></div>
+              <div class="cat-item" onclick="goChat('我想买耳机')"><span>🎧</span><span>耳机</span></div>
+              <div class="cat-item" onclick="goChat('推荐相机')"><span>📷</span><span>相机</span></div>
+              <div class="cat-item" onclick="goChat('推荐平板')"><span>📲</span><span>平板</span></div>
+              <div class="cat-item" onclick="goChat('智能手表推荐')"><span>⌚</span><span>手表</span></div>
+            </div>
+            <div class="section-title">今日热搜</div>
+            <div class="hot-list">
+              <div class="hot-item" onclick="goChat('iPhone 16 怎么样')"><span class="hot-rank hot-1">1</span><span>iPhone 16 Pro 值不值得买</span></div>
+              <div class="hot-item" onclick="goChat('小米15值得买吗')"><span class="hot-rank hot-2">2</span><span>小米 15 发布，和上代有啥区别</span></div>
+              <div class="hot-item" onclick="goChat('AirPods Pro 3 怎么样')"><span class="hot-rank hot-3">3</span><span>AirPods Pro 3 降噪效果怎么样</span></div>
+              <div class="hot-item" onclick="goChat('MacBook Air M4 推荐吗')"><span class="hot-rank">4</span><span>MacBook Air M4 对比 M3 提升大吗</span></div>
+              <div class="hot-item" onclick="goChat('2000以内耳机推荐')"><span class="hot-rank">5</span><span>2000 以内最强降噪耳机排行</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ 页面：我的 ══════════════════════════════ -->
+        <div class="page" id="page-profile">
+          <header class="app-header">
+            <span class="header-title">我的</span>
+          </header>
+          <div class="profile-body">
+            <div class="profile-card">
+              <div class="profile-avatar">Z</div>
+              <div class="profile-info">
+                <div class="profile-name">Zhaochen</div>
+                <div class="profile-email">zcmichael601@gmail.com</div>
+              </div>
+            </div>
+            <div class="menu-group">
+              <div class="menu-item"><span class="material-icons-round menu-icon">history</span><span>历史对话</span><span class="material-icons-round menu-arrow">chevron_right</span></div>
+              <div class="menu-item"><span class="material-icons-round menu-icon">favorite_border</span><span>收藏商品</span><span class="material-icons-round menu-arrow">chevron_right</span></div>
+              <div class="menu-item"><span class="material-icons-round menu-icon">notifications_none</span><span>消息通知</span><span class="material-icons-round menu-arrow">chevron_right</span></div>
+            </div>
+            <div class="menu-group">
+              <div class="menu-item"><span class="material-icons-round menu-icon">tune</span><span>偏好设置</span><span class="material-icons-round menu-arrow">chevron_right</span></div>
+              <div class="menu-item"><span class="material-icons-round menu-icon">help_outline</span><span>帮助与反馈</span><span class="material-icons-round menu-arrow">chevron_right</span></div>
+              <div class="menu-item"><span class="material-icons-round menu-icon">info_outline</span><span>关于</span><span class="material-icons-round menu-arrow">chevron_right</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <nav class="tab-bar">
+          <button class="tab active" data-tab="chat" onclick="switchTab('chat')">
+            <span class="material-icons-round tab-icon">chat_bubble_outline</span>
+            <span class="tab-label">对话</span>
+          </button>
+          <button class="tab" data-tab="discover" onclick="switchTab('discover')">
+            <span class="material-icons-round tab-icon">explore</span>
+            <span class="tab-label">发现</span>
+          </button>
+          <button class="tab" data-tab="profile" onclick="switchTab('profile')">
+            <span class="material-icons-round tab-icon">person_outline</span>
+            <span class="tab-label">我的</span>
+          </button>
+        </nav>
+
+      </div><!-- /phone-screen -->
+    </div><!-- /phone-frame -->
+
+  </div><!-- /desktop-bg -->
+
+  <script src="app.js"></script>
+</body>
+</html>
