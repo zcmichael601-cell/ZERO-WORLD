@@ -120,7 +120,11 @@
       "Bash(mv __TRACKED_VAR__/2024-Q4.xlsx __TRACKED_VAR__/团队管理与人事/绩效考核/)",
       "Bash(mv __TRACKED_VAR__/2024Q3公投.xlsx __TRACKED_VAR__/团队管理与人事/绩效考核/)",
       "Bash(mv __TRACKED_VAR__/Desktop/JD数据底表 __TRACKED_VAR__/数据商业化/产品文档/)",
-      "Bash(mv __TRACKED_VAR__/JD数据底表 __TRACKED_VAR__/数据商业化/产品文档/)"
+      "Bash(mv __TRACKED_VAR__/JD数据底表 __TRACKED_VAR__/数据商业化/产品文档/)",
+      "Bash(crontab -l)",
+      "Bash(gh repo *)",
+      "Bash(git -C \"/Users/zhaochen10/Library/Application Support/com.jd.me/data/ee/zhaochen10/file/Zero World\" config --get credential.helper)",
+      "Bash(security find-internet-password *)"
     ]
   }
 }
