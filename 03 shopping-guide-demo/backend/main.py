@@ -338,9 +338,10 @@ async def chat(request: Request):
         body = await request.json()
         req  = ChatRequest(**body)
     except (ValidationError, Exception) as e:
+        _err_msg = str(e)   # capture before Python deletes `e` at end of except block
         async def _err_gen():
             yield _sse("error", ErrorPayload(
-                message=str(e), code="invalid_request"
+                message=_err_msg, code="invalid_request"
             ).model_dump())
         return StreamingResponse(_err_gen(), media_type="text/event-stream")
 
