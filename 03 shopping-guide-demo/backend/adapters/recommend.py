@@ -1,58 +1,66 @@
 """
-推荐算子适配器
-─────────────────────────────────────────────────────────────
-接入公司内部推荐算子（召回 + 排序）。
-
-【接入步骤】
-1. 找算法同学确认推荐接口：地址 / 入参（用户画像/上下文） / 出参格式
-2. 在 config.py 填写 RECOMMEND_API_URL 和 RECOMMEND_API_TOKEN
-3. 把 USE_MOCK_RECOMMEND 改为 false
-4. 修改 _call_real_recommend() 里的字段映射
+推荐算子适配器 v0.2 — Mock 返回热销手机，真实服务留接入点
 """
+
+import json
+from pathlib import Path
 
 import httpx
 from config import RECOMMEND_API_URL, RECOMMEND_API_TOKEN, USE_MOCK_RECOMMEND
 
-_MOCK_HOT = [
-    {"name": "iPhone 15 Pro",   "desc": "本周热销 #1",  "price": "7999", "emoji": "🔥"},
-    {"name": "索尼降噪耳机",    "desc": "用户好评 96%", "price": "1899", "emoji": "⭐"},
-    {"name": "MacBook Air M3",  "desc": "生产力首选",   "price": "8499", "emoji": "💻"},
-]
+_DATA_PATH = Path(__file__).parent.parent / "data" / "phones.json"
+_PHONES: list[dict] = []
+
+
+def _load_phones() -> list[dict]:
+    global _PHONES
+    if not _PHONES:
+        try:
+            _PHONES = json.loads(_DATA_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            _PHONES = []
+    return _PHONES
 
 
 async def recommend_products(user_context: dict) -> list[dict]:
-    """
-    推荐入口。
-
-    user_context 示例:
-    {
-        "session_id": "abc123",
-        "history_keywords": ["手机", "拍照"],
-        "price_sensitivity": "mid",   # low / mid / high
-    }
-    """
     if USE_MOCK_RECOMMEND:
-        return _MOCK_HOT
+        return _mock_recommend(user_context)
     return await _call_real_recommend(user_context)
 
 
-async def _call_real_recommend(user_context: dict) -> list[dict]:
-    """
-    ★ 接入点：替换为公司推荐算子接口
+def _mock_recommend(user_context: dict) -> list[dict]:
+    phones = _load_phones()
+    sensitivity = user_context.get("price_sensitivity", "mid")
 
-    推荐算子通常需要：
-    - 用户 ID 或 session ID
-    - 当前对话的意图/关键词
-    - 可选：价格区间、品牌偏好
-    """
+    price_filtered = phones
+    if sensitivity == "low":
+        price_filtered = [p for p in phones if p.get("price", 0) < 2000]
+    elif sensitivity == "mid":
+        price_filtered = [p for p in phones if 1500 < p.get("price", 0) < 5000]
+    elif sensitivity == "high":
+        price_filtered = [p for p in phones if p.get("price", 0) >= 5000]
+
+    # 按销量+评分排序
+    ranked = sorted(
+        price_filtered or phones,
+        key=lambda p: p.get("sales", 0) * p.get("rating", 4.0),
+        reverse=True,
+    )
+    top = ranked[:6]
+    for p in top:
+        p.setdefault("reason", "热销推荐")
+    return top
+
+
+async def _call_real_recommend(user_context: dict) -> list[dict]:
+    """★ 接入点：替换为公司推荐算子接口"""
     headers = {"Authorization": f"Bearer {RECOMMEND_API_TOKEN}"}
     payload = {
-        "sessionId":       user_context.get("session_id", ""),
-        "keywords":        user_context.get("history_keywords", []),
+        "sessionId":        user_context.get("session_id", ""),
+        "keywords":         user_context.get("history_keywords", []),
         "priceSensitivity": user_context.get("price_sensitivity", "mid"),
-        "topN": 5,
+        "topN": 6,
     }
-
     async with httpx.AsyncClient(timeout=5.0) as client:
         resp = await client.post(RECOMMEND_API_URL, json=payload, headers=headers)
         resp.raise_for_status()
@@ -61,10 +69,14 @@ async def _call_real_recommend(user_context: dict) -> list[dict]:
     items = data.get("recommendations", data.get("items", []))
     return [
         {
-            "name":  item.get("itemName", ""),
-            "desc":  item.get("reason", item.get("desc", "")),
-            "price": str(item.get("price", "")),
-            "emoji": "⭐",
+            "id":         item.get("skuId", item.get("id", "")),
+            "title":      item.get("itemName", item.get("title", "")),
+            "price":      float(item.get("price", 0)),
+            "image":      item.get("imageUrl", item.get("image", "")),
+            "rating":     float(item.get("score", item.get("rating", 4.0))),
+            "sales":      int(item.get("salesCount", item.get("sales", 0))),
+            "reason":     item.get("reason", "推荐"),
+            "highlights": item.get("highlights", []),
         }
         for item in items
     ]

@@ -521,3 +521,114 @@ html, body { height: 100%; font-family: 'Roboto', 'Google Sans', sans-serif; }
 
 .tab-icon { font-size: 22px; transition: all .15s; }
 .tab-label { font-size: 11px; font-weight: 500; }
+
+/* ── v0.3 SSE 新组件 ────────────────────────────────── */
+
+/* 意图标签 */
+.intent-badge {
+  font-size: 10px; color: var(--text-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  align-self: flex-start;
+}
+
+/* 思考状态行 */
+.thinking-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface); border-radius: 14px;
+}
+.thinking-text { font-size: 12px; color: var(--text-3); }
+.thinking-dots { display: flex; gap: 3px; align-items: center; }
+.thinking-dots span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--text-3);
+  animation: blink 1.2s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: .15s; }
+.thinking-dots span:nth-child(3) { animation-delay: .3s; }
+
+/* 追问气泡 + 选项 */
+.clarify-wrap { display: flex; flex-direction: column; gap: 8px; }
+.clarify-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.clarify-opt {
+  border: 1.5px solid var(--blue);
+  background: #e8f0fe;
+  color: var(--blue);
+  font-size: 12px; font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.clarify-opt:hover { background: #c5d8fb; }
+.clarify-opt:active { transform: scale(.95); }
+
+/* 商品卡片扩展字段 */
+.p-meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.p-stars { font-size: 10px; color: #f9ab00; letter-spacing: .5px; }
+.p-sales { font-size: 10px; color: var(--text-3); }
+.p-highlights { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.p-tag {
+  font-size: 10px; color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+.p-reason {
+  font-size: 11px; color: #0b57d0;
+  margin-top: 3px; line-height: 1.4;
+}
+
+/* Help Me Decide 对比摘要 */
+.rank-summary {
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px; color: var(--text-2);
+  line-height: 1.55;
+  display: flex; align-items: flex-start; gap: 6px;
+}
+.rank-icon { font-size: 13px; flex-shrink: 0; }
+
+/* 完成标签 & 错误 */
+.done-badge {
+  font-size: 10px; color: var(--text-3);
+  align-self: flex-end; padding: 2px 0;
+}
+.error-bubble {
+  background: #fce8e6 !important;
+  color: #c5221f !important;
+}
+
+/* 反馈行 */
+.feedback-row {
+  display: flex; align-items: center; gap: 6px;
+  padding-top: 4px;
+}
+.fb-label { font-size: 11px; color: var(--text-3); }
+.fb-btn {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .12s, transform .1s;
+  line-height: 1;
+}
+.fb-btn:hover { background: var(--surface); transform: scale(1.1); }
+.fb-btn:active { transform: scale(.95); }
+.fb-thanks { font-size: 12px; color: var(--text-3); }
+
+/* 追问选项：选中/禁用态 */
+.clarify-opt:disabled { opacity: .5; cursor: default; }
+.clarify-opt.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}

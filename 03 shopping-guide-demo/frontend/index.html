@@ -50,21 +50,21 @@
             <div class="welcome-greeting">你好，今天想买什么？</div>
             <div class="welcome-sub">我会结合搜索和 AI，帮你找到最合适的商品</div>
             <div class="suggestion-grid">
-              <button class="sg-card" onclick="sendChip('推荐一部拍照好的手机，预算4000')">
+              <button class="sg-card" onclick="sendChip('推荐一部拍照好的手机，预算4000以内')">
                 <span class="material-icons-round sg-icon">photo_camera</span>
                 <span>拍照好的手机</span>
               </button>
-              <button class="sg-card" onclick="sendChip('通勤用的降噪耳机推荐')">
-                <span class="material-icons-round sg-icon">headphones</span>
-                <span>通勤降噪耳机</span>
+              <button class="sg-card" onclick="sendChip('游戏性能最强的手机推荐')">
+                <span class="material-icons-round sg-icon">sports_esports</span>
+                <span>游戏旗舰</span>
               </button>
-              <button class="sg-card" onclick="sendChip('3000以内的笔记本推荐')">
-                <span class="material-icons-round sg-icon">laptop</span>
-                <span>3000内笔记本</span>
+              <button class="sg-card" onclick="sendChip('2000以内续航好的手机')">
+                <span class="material-icons-round sg-icon">battery_charging_full</span>
+                <span>续航好·2000内</span>
               </button>
               <button class="sg-card" onclick="sendChip('iPhone和小米旗舰怎么选？')">
                 <span class="material-icons-round sg-icon">compare</span>
-                <span>手机对比</span>
+                <span>iPhone vs 小米</span>
               </button>
             </div>
           </div>
@@ -75,10 +75,11 @@
           <!-- 输入区 -->
           <div class="chat-footer">
             <div class="chips-row">
-              <button class="chip" onclick="sendChip('我想买手机')">📱 手机</button>
-              <button class="chip" onclick="sendChip('我想买耳机')">🎧 耳机</button>
-              <button class="chip" onclick="sendChip('我想买电脑')">💻 电脑</button>
-              <button class="chip" onclick="sendChip('3000以内好物')">💰 3000内</button>
+              <button class="chip" onclick="sendChip('推荐旗舰手机')">🏆 旗舰</button>
+              <button class="chip" onclick="sendChip('3000以内性价比手机')">💰 3000内</button>
+              <button class="chip" onclick="sendChip('最新发布的手机有哪些')">⚡ 最新款</button>
+              <button class="chip" onclick="sendChip('华为手机推荐')">📱 华为</button>
+              <button class="chip" onclick="sendChip('苹果iPhone推荐')">🍎 苹果</button>
             </div>
             <div class="composer">
               <textarea id="userInput" class="composer-input" placeholder="发消息..." rows="1"></textarea>
