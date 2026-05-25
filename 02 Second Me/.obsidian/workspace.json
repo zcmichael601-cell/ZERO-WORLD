@@ -11,10 +11,14 @@
             "id": "55a6391aada04922",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Diary/2026-W21 (5.18-5.24).md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "2026-W21 (5.18-5.24)"
             }
           }
         ]
@@ -176,6 +180,30 @@
       "bases:新建数据库": false
     }
   },
-  "active": "55a6391aada04922",
-  "lastOpenFiles": []
+  "active": "80ed173406cb29ab",
+  "lastOpenFiles": [
+    "Weekly/W35-08.29周记.md",
+    "Weekly/W34-08.22周记.md",
+    "Weekly/W33-08.15周记.md",
+    "Weekly/W32-08.08周记.md",
+    "Weekly/W31-08.01周记.md",
+    "Weekly/W30-07.25周记.md",
+    "Weekly/W29-07.18周记.md",
+    "Weekly/W28-07.11周记.md",
+    "Weekly/W27-07.04周记.md",
+    "Weekly/W26-06.27周记.md",
+    "Weekly/W25-06.20周记.md",
+    "Weekly/W24-06.13周记.md",
+    "Weekly/W23-06.06周记.md",
+    "Weekly/W22-05.30周记.md",
+    "Diary/2026-W30 (7.20-7.26).md",
+    "Diary/2026-W29 (7.13-7.19).md",
+    "Diary/2026-W28 (7.06-7.12).md",
+    "Diary/2026-W27 (6.29-7.05).md",
+    "Diary/2026-W26 (6.22-6.28).md",
+    "Diary/2026-W25 (6.15-6.21).md",
+    "Diary/2026-W24 (6.08-6.14).md",
+    "Diary/2026-W23 (6.01-6.07).md",
+    "Diary/2026-W22 (5.25-5.31).md"
+  ]
 }
