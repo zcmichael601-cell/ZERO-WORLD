@@ -169,7 +169,15 @@ async def intent_router(message: str, history: list[dict]) -> IntentResult:
         if quick.intent_type in FALLBACK_INTENTS and quick.confidence >= 0.80:
             return quick
 
-    return await _glm_intent_router(message, history)
+    result = await _glm_intent_router(message, history)
+
+    # 本地规则兜底：GLM 漏掉的槽位（如 "3000以内" 这类短回复）用本地规则补上
+    local_slots = _extract_basic_slots(message)
+    for k, v in local_slots.items():
+        if k not in result.slots:
+            result.slots[k] = v
+
+    return result
 
 
 async def clarification_generator(
