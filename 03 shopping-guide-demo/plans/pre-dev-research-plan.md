@@ -25,7 +25,7 @@
 | M0 | 5/07 | 调研计划定稿 | ✅ |
 | M1 | 5/12 | 行业调研完成（阿里/字节/Amazon/总结）| ✅ |
 | M2 | 5/14 | 消费者洞察完成 | ✅ |
-| **M3'** | **6/08** | **Demo v0.3 上线**（GLM + SSE + 三链路 + 手机品类）| 🔄 进行中 |
+| **M3'** | **5/26** | **Demo v0.3 上线**（GLM + SSE + 三链路 + 手机品类）| ✅ 已完成 |
 | M4 | 6/20 | 系统现状调研完成（搜索+推荐+广告SPU）| 🔄 并行进行 |
 | M5 | 6/27 | 综合分析 + SWOT + PRD v0.3 修订 | ⬜ |
 | **M6** | **7/11** | **Demo v0.4**（接入真实搜索/推荐算子，基于现状调研）| ⬜ |
@@ -135,9 +135,10 @@
 
 | 文档 | 对应里程碑 | 状态 |
 |------|-----------|------|
-| `specs/features/chat.md` v0.2 | M3'（Sprint 1）| 🔄 |
-| `plans/architecture.md` v0.2 | M3'（Sprint 1）| 🔄 |
-| `tests/test-plan.md` | M3'（Sprint 3）| ⬜ |
+| `specs/features/chat.md` v0.2 | M3'（Sprint 1）| ✅ |
+| `plans/architecture.md` v0.2 | M3'（Sprint 1）| ✅ |
+| `tests/test-plan.md` | M3'（Sprint 3）| ✅ |
+| `tests/report.md` | M3'（Sprint 3）| ✅ |
 | `strategy/swot.md` | M5 | ⬜ |
 | `strategy/research-summary.md` | M5 | ⬜ |
 | `specs/overview.md` v0.3 | M5 | ⬜ |

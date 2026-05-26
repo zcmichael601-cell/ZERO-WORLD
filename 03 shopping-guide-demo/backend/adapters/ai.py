@@ -168,6 +168,9 @@ async def intent_router(message: str, history: list[dict]) -> IntentResult:
             return quick
         if quick.intent_type in FALLBACK_INTENTS and quick.confidence >= 0.80:
             return quick
+        # spec_comparison：双品牌已确定，不让 GLM 覆盖 brand2
+        if quick.intent_type == "spec_comparison" and "brand2" in quick.slots and quick.confidence >= 0.85:
+            return quick
 
     result = await _glm_intent_router(message, history)
 
