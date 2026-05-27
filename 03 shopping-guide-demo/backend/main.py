@@ -1,11 +1,14 @@
 """
-购物导购助手 v0.3 后端
-架构：SSE 流式输出 + 三链路路由（传统搜索 / LLM / 兜底）+ 熔断器
+购物导购助手 v1.0 后端
+架构：SSE 流式输出 + 三链路路由（传统搜索 / LLM / 兜底）+ 熔断器 + 指标监控
 """
 
 import json
+import logging
 import time
 import asyncio
+from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
 from fastapi import FastAPI, Request
@@ -22,12 +25,65 @@ from models.response import (
 from adapters.ai import (
     intent_router, clarification_generator, product_ranker,
     TRADITIONAL_INTENTS, LLM_INTENTS, FALLBACK_INTENTS,
+    _rank_cache,
 )
 from adapters.search import search_products
 from adapters.recommend import recommend_products
 from utils.circuit_breaker import CircuitBreaker
+import utils.metrics as _metrics
 
-app = FastAPI(title="购物导购助手 v0.3")
+
+# ── 日志配置 ──────────────────────────────────────────────────────────
+
+logging.basicConfig(
+    level=getattr(logging, config.LOG_LEVEL, logging.INFO),
+    format='{"time":"%(asctime)s","level":"%(levelname)s","msg":%(message)s}',
+    datefmt="%Y-%m-%dT%H:%M:%S",
+)
+log = logging.getLogger("guide")
+
+
+# ── 启动校验 ──────────────────────────────────────────────────────────
+
+_DATA_PATH = Path(__file__).parent / "data" / "phones.json"
+
+def _startup_checks() -> dict:
+    issues = []
+    warnings = []
+
+    if not _DATA_PATH.exists():
+        issues.append("phones.json not found")
+    else:
+        try:
+            phones = json.loads(_DATA_PATH.read_text(encoding="utf-8"))
+            if not phones:
+                issues.append("phones.json is empty")
+            else:
+                log.info(f'"Loaded phones.json: {len(phones)} entries"')
+        except Exception as e:
+            issues.append(f"phones.json parse error: {e}")
+
+    if not config.USE_MOCK_AI and not config.GLM_API_KEY:
+        issues.append("GLM_API_KEY not set (required when USE_MOCK_AI=false)")
+
+    if issues:
+        for msg in issues:
+            log.error(f'"Startup check FAILED: {msg}"')
+    else:
+        log.info('"All startup checks passed"')
+
+    return {"ok": len(issues) == 0, "issues": issues, "warnings": warnings}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    result = _startup_checks()
+    if not result["ok"]:
+        log.warning(f'"Starting with issues: {result["issues"]}"')
+    yield
+
+
+app = FastAPI(title="购物导购助手 v1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
@@ -39,7 +95,7 @@ _glm_cb = CircuitBreaker(
 )
 
 
-# ── SSE 工具函数 ──────────────────────────────────────────────────────────
+# ── SSE 工具函数 ──────────────────────────────────────────────────────
 
 def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
@@ -55,13 +111,24 @@ def _done_payload(pipeline: str, intent_type: str,
     ).model_dump()
 
 
-# ── 兜底链路 ──────────────────────────────────────────────────────────────
+def _sse_done(pipeline: str, intent_type: str,
+              start_ms: float, clarify_turns: int = 0,
+              is_error: bool = False) -> str:
+    payload = _done_payload(pipeline, intent_type, start_ms, clarify_turns)
+    _metrics.record(pipeline, intent_type, payload["latency_ms"], is_error)
+    log.info(
+        f'"pipeline":"{pipeline}","intent":"{intent_type}",'
+        f'"latency_ms":{payload["latency_ms"]},"error":{str(is_error).lower()}'
+    )
+    return _sse("done", payload)
+
+
+# ── 兜底链路 ──────────────────────────────────────────────────────────
 
 async def _fallback_pipeline(
     req: ChatRequest,
     trigger_reason: str,
     start_ms: float,
-    already_privacy: bool = False,
     intent_type: str = "unknown",
     clarify_turns: int = 0,
 ) -> AsyncGenerator[str, None]:
@@ -79,7 +146,7 @@ async def _fallback_pipeline(
 
     if trigger_reason in ("out_of_scope", "cross_platform"):
         yield _sse("thinking", ThinkingPayload(message=reply_text).model_dump())
-        yield _sse("done", _done_payload("fallback", intent_type, start_ms, clarify_turns))
+        yield _sse_done("fallback", intent_type, start_ms, clarify_turns)
         return
 
     yield _sse("thinking", ThinkingPayload(message=reply_text).model_dump())
@@ -103,10 +170,10 @@ async def _fallback_pipeline(
         }).model_dump())
         await asyncio.sleep(0)
 
-    yield _sse("done", _done_payload("fallback", intent_type, start_ms, clarify_turns))
+    yield _sse_done("fallback", intent_type, start_ms, clarify_turns)
 
 
-# ── 传统搜索链路 ──────────────────────────────────────────────────────────
+# ── 传统搜索链路 ──────────────────────────────────────────────────────
 
 async def _traditional_pipeline(
     req: ChatRequest,
@@ -130,6 +197,8 @@ async def _traditional_pipeline(
             category  = "手机",
             price_max = slots.get("price_max", 0),
             brand     = slots.get("brand", ""),
+            price_min = slots.get("price_min", 0),
+            scenario  = slots.get("scenario", ""),
         )
     except Exception:
         async for chunk in _fallback_pipeline(
@@ -160,10 +229,10 @@ async def _traditional_pipeline(
         }).model_dump())
         await asyncio.sleep(0)
 
-    yield _sse("done", _done_payload("traditional", intent_result.intent_type, start_ms))
+    yield _sse_done("traditional", intent_result.intent_type, start_ms)
 
 
-# ── LLM 链路 ──────────────────────────────────────────────────────────────
+# ── LLM 链路 ──────────────────────────────────────────────────────────
 
 async def _llm_pipeline(
     req: ChatRequest,
@@ -210,8 +279,8 @@ async def _llm_pipeline(
                 question = clarify.question,
                 options  = clarify.options,
             ).model_dump())
-            yield _sse("done", _done_payload("llm", intent_result.intent_type,
-                                             start_ms, clarify_turns + 1))
+            yield _sse_done("llm", intent_result.intent_type,
+                            start_ms, clarify_turns + 1)
             return
         except Exception:
             _glm_cb.record_failure()
@@ -235,7 +304,11 @@ async def _llm_pipeline(
         return
 
     # 搜索商品（spec_comparison 时双品牌各搜一批）
-    thinking_msg = "正在对比两款手机…" if intent_result.intent_type == "spec_comparison" else "正在为你筛选合适的手机…"
+    thinking_msg = (
+        "正在对比两款手机…"
+        if intent_result.intent_type == "spec_comparison"
+        else "正在为你筛选合适的手机…"
+    )
     yield _sse("thinking", ThinkingPayload(message=thinking_msg).model_dump())
 
     try:
@@ -257,6 +330,8 @@ async def _llm_pipeline(
                 category  = "手机",
                 price_max = slots.get("price_max", 0),
                 brand     = slots.get("brand", ""),
+                price_min = slots.get("price_min", 0),
+                scenario  = slots.get("scenario", ""),
             )
         if not products:
             user_context = {
@@ -266,9 +341,10 @@ async def _llm_pipeline(
                              and slots.get("price_max", 0) < 2000
                     else "mid"
                 ),
+                "scenario": slots.get("scenario", ""),
             }
             products = await recommend_products(user_context)
-    except Exception as e:
+    except Exception:
         _glm_cb.record_failure()
         async for chunk in _fallback_pipeline(
             req, "llm_error", start_ms,
@@ -320,38 +396,36 @@ async def _llm_pipeline(
     if summary and len(ranked_products) >= 3:
         yield _sse("rank", RankPayload(
             summary  = summary,
-            products = [],   # products already sent above
+            products = [],
         ).model_dump())
 
-    yield _sse("done", _done_payload("llm", intent_result.intent_type,
-                                     start_ms, clarify_turns))
+    yield _sse_done("llm", intent_result.intent_type, start_ms, clarify_turns)
 
 
-# ── 主路由入口 ────────────────────────────────────────────────────────────
+# ── 主路由入口 ────────────────────────────────────────────────────────
 
 @app.post("/chat")
 async def chat(request: Request):
     start_ms = time.monotonic()
 
-    # 解析请求体（手动处理，以便返回 SSE 错误流）
     try:
         body = await request.json()
         req  = ChatRequest(**body)
     except (ValidationError, Exception) as e:
-        _err_msg = str(e)   # capture before Python deletes `e` at end of except block
+        _err_msg = str(e)
         async def _err_gen():
             yield _sse("error", ErrorPayload(
                 message=_err_msg, code="invalid_request"
             ).model_dump())
+        _metrics.record("error", "invalid_request",
+                        int((time.monotonic() - start_ms) * 1000), is_error=True)
         return StreamingResponse(_err_gen(), media_type="text/event-stream")
 
     async def _generate():
         try:
-            # 意图路由
             history = [m.model_dump() for m in req.history]
             intent_result = await intent_router(req.message, history)
 
-            # 按 pipeline 分流
             if intent_result.pipeline == "traditional":
                 async for chunk in _traditional_pipeline(req, intent_result, start_ms):
                     yield chunk
@@ -360,7 +434,7 @@ async def chat(request: Request):
                 async for chunk in _llm_pipeline(req, intent_result, start_ms):
                     yield chunk
 
-            else:  # fallback（out_of_scope / cross_platform）
+            else:
                 yield _sse("intent", IntentPayload(
                     intent_type = intent_result.intent_type,
                     confidence  = intent_result.confidence,
@@ -374,14 +448,39 @@ async def chat(request: Request):
                     yield chunk
 
         except Exception as e:
+            log.error(f'"Unhandled error: {e}"')
             yield _sse("error", ErrorPayload(
                 message="服务异常，请稍后重试", code="internal_error"
             ).model_dump())
-            yield _sse("done", _done_payload("fallback", "unknown", start_ms))
+            yield _sse_done("fallback", "unknown", start_ms, is_error=True)
 
     return StreamingResponse(_generate(), media_type="text/event-stream")
 
 
+# ── 健康检查 & 监控端点 ───────────────────────────────────────────────
+
 @app.get("/health")
 def health():
-    return {"status": "ok", "cb_state": _glm_cb.state}
+    phones_ok = _DATA_PATH.exists()
+    api_key_set = bool(config.GLM_API_KEY) or config.USE_MOCK_AI
+    return {
+        "status":      "ok" if (phones_ok and api_key_set) else "degraded",
+        "version":     "1.0",
+        "cb_state":    _glm_cb.state,
+        "phones_ok":   phones_ok,
+        "api_key_set": api_key_set,
+        "mock_mode":   {
+            "ai":        config.USE_MOCK_AI,
+            "search":    config.USE_MOCK_SEARCH,
+            "recommend": config.USE_MOCK_RECOMMEND,
+        },
+    }
+
+
+@app.get("/metrics")
+def metrics():
+    return {
+        **_metrics.snapshot(),
+        "rank_cache": _rank_cache.stats(),
+        "circuit_breaker": {"state": _glm_cb.state},
+    }

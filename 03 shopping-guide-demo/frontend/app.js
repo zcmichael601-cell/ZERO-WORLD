@@ -9,9 +9,25 @@ let history     = [];
 let chatStarted = false;
 let isLoading   = false;
 let sessionId   = _uuid();
+let lastQuery   = "";  // for retry on error
 
 function _uuid() {
   return "s-" + Math.random().toString(36).slice(2, 10);
+}
+
+// ── Toast 提示 ────────────────────────────────────────
+function showToast(msg, duration = 2000) {
+  let toast = document.getElementById("_toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "_toast";
+    toast.className = "app-toast";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add("visible");
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove("visible"), duration);
 }
 
 // ── 状态栏时钟 ────────────────────────────────────────
@@ -39,16 +55,35 @@ function goChat(text) {
 }
 
 // ── 新对话 ────────────────────────────────────────────
-document.getElementById("newChatBtn").addEventListener("click", () => {
+function startNewChat() {
   history     = [];
   sessionId   = _uuid();
   chatStarted = false;
+  lastQuery   = "";
   chatWindow.innerHTML = "";
   chatWindow.classList.remove("active");
   welcome.style.display = "";
   userInput.value = "";
   userInput.style.height = "auto";
   sendBtn.disabled = true;
+  userInput.focus();
+}
+
+document.getElementById("newChatBtn").addEventListener("click", startNewChat);
+
+// ── 键盘快捷键 ─────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  // Cmd+K（Mac）或 Ctrl+K（Win）：新对话
+  if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    e.preventDefault();
+    startNewChat();
+    showToast("已开始新对话 ⌘K");
+  }
+  // Cmd+/ : 聚焦输入框
+  if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+    e.preventDefault();
+    userInput.focus();
+  }
 });
 
 // ── 输入框自动伸高 ────────────────────────────────────
@@ -86,6 +121,7 @@ async function sendMessage() {
   sendBtn.disabled = true;
   isLoading = true;
 
+  lastQuery = text;
   appendUser(text);
   history.push({ role: "user", content: text });
 
@@ -182,7 +218,7 @@ async function sendMessage() {
     }
   } catch {
     removeThinking(botRow);
-    addErrorBubble(botRow, "连接服务失败，请确认后端已启动 🔌");
+    addErrorBubble(botRow, "连接服务失败，请确认后端已启动 🔌", true);
   }
 
   if (assistantText) {
@@ -322,6 +358,13 @@ function addProductCard(row, p) {
       ${reasonHtml}
     </div>
     <div class="p-price">¥${Number(p.price).toLocaleString()}</div>`;
+
+  card.addEventListener("click", () => {
+    showToast(`「${p.title.slice(0, 12)}…」已加入心愿单 ❤️`);
+    card.classList.add("card-tapped");
+    setTimeout(() => card.classList.remove("card-tapped"), 300);
+  });
+
   list.appendChild(card);
 }
 
@@ -360,11 +403,29 @@ function addFeedbackRow(row) {
   body.appendChild(el);
 }
 
-function addErrorBubble(row, msg) {
+function addErrorBubble(row, msg, showRetry = false) {
   const body = getBody(row);
   const el   = document.createElement("div");
-  el.className = "bubble bot error-bubble";
-  el.textContent = msg;
+  el.className = "error-wrap";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble bot error-bubble";
+  bubble.textContent = msg;
+  el.appendChild(bubble);
+
+  if (showRetry && lastQuery) {
+    const btn = document.createElement("button");
+    btn.className = "retry-btn";
+    btn.textContent = "重试";
+    btn.addEventListener("click", () => {
+      if (isLoading) return;
+      userInput.value = lastQuery;
+      sendBtn.disabled = false;
+      sendMessage();
+    });
+    el.appendChild(btn);
+  }
+
   body.appendChild(el);
 }
 

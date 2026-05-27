@@ -632,3 +632,56 @@ html, body { height: 100%; font-family: 'Roboto', 'Google Sans', sans-serif; }
   color: #fff;
   border-color: var(--blue);
 }
+
+/* ── v1.0 新增组件 ──────────────────────────────────── */
+
+/* 错误包装（气泡 + 重试按钮）*/
+.error-wrap { display: flex; flex-direction: column; gap: 6px; }
+
+/* 重试按钮 */
+.retry-btn {
+  align-self: flex-start;
+  border: 1.5px solid #c5221f;
+  background: #fff8f7;
+  color: #c5221f;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .12s, transform .1s;
+}
+.retry-btn:hover { background: #fce8e6; }
+.retry-btn:active { transform: scale(.95); }
+
+/* 商品卡片点击态 */
+.product-card:hover { box-shadow: 0 2px 12px rgba(26,115,232,.12); }
+@keyframes cardTap {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(.96); }
+  100% { transform: scale(1); }
+}
+.product-card.card-tapped { animation: cardTap .3s ease; }
+
+/* Toast 全局提示 */
+.app-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: rgba(31,31,31,.88);
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+.app-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

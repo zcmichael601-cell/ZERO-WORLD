@@ -11,6 +11,10 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import config
+from utils.lru_cache import TTLCache
+
+# V4-02: cache for GLM ranking results (key = hash of product ids + slots + message)
+_rank_cache = TTLCache(maxsize=config.RANK_CACHE_SIZE, ttl=config.RANK_CACHE_TTL)
 
 
 # ── 数据类 ──────────────────────────────────────────────────────────────
@@ -65,8 +69,19 @@ _TIME_WORDS   = ["最新", "刚发布", "今年", "新款", "2026", "最近发�
 def _rule_based_intent(message: str) -> IntentResult:
     msg = message.lower()
 
-    # out_of_scope: 明显非手机购物
-    if re.search(r"天气|新闻|音乐|导航|翻译|股票|笑话", msg):
+    # out_of_scope: 明显非手机购物（V4-01 扩展词表）
+    if re.search(
+        r"天气|新闻|音乐|导航|翻译|股票|笑话"
+        r"|外卖|点餐|订餐|美食|餐厅|饭店"
+        r"|打车|叫车|出租车|网约车"
+        r"|旅游|机票|火车票|酒店|民宿"
+        r"|租房|买房|装修|搬家"
+        r"|贷款|理财|基金|保险"
+        r"|挂号|医院|看病|药"
+        r"|快递|物流|寄件"
+        r"|充话费|话费|流量",
+        msg,
+    ):
         return IntentResult("out_of_scope", 0.95, pipeline="fallback")
 
     # cross_platform: 比价/哪里买
@@ -360,6 +375,17 @@ async def _glm_rank(
     message: str,
 ) -> RankResult:
     candidates = products[:8]  # 最多传8条给LLM排序
+
+    # V4-02: check cache first
+    cache_key = _rank_cache.make_key(
+        sorted(p["id"] for p in candidates),
+        json.dumps(slots, sort_keys=True, ensure_ascii=False),
+        message,
+    )
+    cached = _rank_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     prod_summary = json.dumps(
         [{"id": p["id"], "title": p["title"], "price": p["price"],
           "rating": p["rating"], "sales": p["sales"],
@@ -403,6 +429,8 @@ async def _glm_rank(
 
         if not result:
             return _mock_rank(products, slots)
-        return RankResult(result, summary)
+        rank_result = RankResult(result, summary)
+        _rank_cache.set(cache_key, rank_result)
+        return rank_result
     except Exception:
         return _mock_rank(products, slots)
