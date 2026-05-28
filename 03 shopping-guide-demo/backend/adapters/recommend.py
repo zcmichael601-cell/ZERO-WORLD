@@ -20,6 +20,31 @@ def _load_phones() -> list[dict]:
     return _PHONES
 
 
+async def get_trending(
+    scenario: str = "",
+    price_max: int = 0,
+    limit: int = 12,
+) -> list[dict]:
+    """发现页热门商品，按销量×评分排序，支持场景和价格过滤。"""
+    phones = _load_phones()
+    pool = phones
+    if price_max:
+        pool = [p for p in pool if p.get("price", 0) <= price_max]
+    if scenario:
+        def rank_score(p):
+            s = p.get("sales", 0) * 0.00001 + p.get("rating", 4.0) * 2.0
+            if any(scenario in t for t in p.get("tags", [])):
+                s += 3.0
+            return s
+    else:
+        def rank_score(p):
+            return p.get("sales", 0) * p.get("rating", 4.0)
+
+    ranked = sorted(pool, key=rank_score, reverse=True)[:limit]
+    # 不修改原数据，返回副本
+    return [dict(p) for p in ranked]
+
+
 async def recommend_products(user_context: dict) -> list[dict]:
     if USE_MOCK_RECOMMEND:
         return _mock_recommend(user_context)

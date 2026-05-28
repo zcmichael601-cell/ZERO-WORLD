@@ -28,7 +28,7 @@ from adapters.ai import (
     _rank_cache,
 )
 from adapters.search import search_products
-from adapters.recommend import recommend_products
+from adapters.recommend import recommend_products, get_trending
 from utils.circuit_breaker import CircuitBreaker
 import utils.metrics as _metrics
 
@@ -484,3 +484,25 @@ def metrics():
         "rank_cache": _rank_cache.stats(),
         "circuit_breaker": {"state": _glm_cb.state},
     }
+
+
+@app.get("/trending")
+async def trending_products(
+    scenario: str = "",
+    price_max: int = 0,
+    limit: int = 12,
+):
+    """发现页热门推荐，按场景/价格段过滤，按销量×评分排序。"""
+    products = await get_trending(scenario=scenario, price_max=price_max, limit=limit)
+    return {"products": products, "scenario": scenario, "total": len(products)}
+
+
+@app.get("/products/{product_id}")
+def product_detail(product_id: str):
+    """商品详情端点（含完整规格参数）。"""
+    phones = json.loads(_DATA_PATH.read_text(encoding="utf-8"))
+    for p in phones:
+        if p["id"] == product_id:
+            return {"product": p}
+    from fastapi import HTTPException
+    raise HTTPException(status_code=404, detail="Product not found")

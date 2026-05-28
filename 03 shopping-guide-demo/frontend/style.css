@@ -392,7 +392,7 @@ html, body { height: 100%; font-family: 'Roboto', 'Google Sans', sans-serif; }
 .send-btn .material-icons-round { font-size: 18px; }
 
 /* ── 发现页 ─────────────────────────────────────────── */
-.discover-body { flex: 1; overflow-y: auto; padding: 16px; }
+.discover-body { flex: 1; overflow-y: auto; padding: 0 0 16px; }
 .discover-body::-webkit-scrollbar { display: none; }
 
 .discover-banner {
@@ -456,7 +456,8 @@ html, body { height: 100%; font-family: 'Roboto', 'Google Sans', sans-serif; }
 .hot-3 { background: #f9ab00; color: #fff; }
 
 /* ── 我的页 ─────────────────────────────────────────── */
-.profile-body { flex: 1; overflow-y: auto; padding: 16px; }
+.profile-body { flex: 1; overflow-y: auto; padding: 16px; scrollbar-width: none; }
+.profile-body::-webkit-scrollbar { display: none; }
 
 .profile-card {
   display: flex; align-items: center; gap: 16px;
@@ -685,3 +686,252 @@ html, body { height: 100%; font-family: 'Roboto', 'Google Sans', sans-serif; }
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* ── 反馈子选项 ──────────────────────────────────────── */
+.fb-down-wrap { display: flex; flex-direction: column; gap: 6px; }
+.fb-reasons   { display: flex; flex-wrap: wrap; gap: 5px; }
+.fb-reason-btn {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 11px; padding: 4px 10px;
+  border-radius: 999px; cursor: pointer;
+  transition: background .12s;
+}
+.fb-reason-btn:hover { background: var(--surface); }
+
+/* ── 商品详情底部抽屉 ────────────────────────────────── */
+.sheet-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 1000;
+  opacity: 0; transition: opacity .25s;
+  backdrop-filter: blur(2px);
+}
+.sheet-overlay.visible { opacity: 1; }
+
+.product-sheet {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: min(393px, 100vw);
+  max-height: 85vh;
+  background: var(--bg);
+  border-radius: 24px 24px 0 0;
+  z-index: 1001;
+  display: flex; flex-direction: column;
+  transition: transform .28s cubic-bezier(.32,1.02,.42,1);
+  overflow: hidden;
+}
+.product-sheet.visible { transform: translateX(-50%) translateY(0); }
+
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 4px;
+  flex-shrink: 0;
+}
+
+.sheet-close {
+  position: absolute; top: 12px; right: 16px;
+  width: 28px; height: 28px;
+  border: none; background: var(--surface);
+  border-radius: 50%; cursor: pointer;
+  font-size: 12px; color: var(--text-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.sheet-close:hover { background: var(--border); }
+
+.sheet-body {
+  flex: 1; overflow-y: auto; padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.sheet-body::-webkit-scrollbar { display: none; }
+
+.sheet-thumb {
+  font-size: 56px; text-align: center;
+  background: var(--surface); border-radius: 18px;
+  padding: 16px; margin-bottom: 4px;
+}
+.sheet-brand {
+  font-size: 11px; color: var(--text-3);
+  text-align: center; letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.sheet-title {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 17px; font-weight: 600;
+  color: var(--text); text-align: center; line-height: 1.35;
+}
+.sheet-price {
+  font-size: 24px; font-weight: 700;
+  color: #c5221f; text-align: center;
+}
+.sheet-meta { display: flex; justify-content: center; gap: 10px; }
+
+.sheet-section-title {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-2); margin-top: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.spec-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.spec-item {
+  background: var(--surface); border-radius: 10px;
+  padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.spec-label { font-size: 10px; color: var(--text-3); }
+.spec-value { font-size: 13px; font-weight: 500; color: var(--text); }
+
+.detail-highlights {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.detail-highlights li {
+  font-size: 13px; color: var(--text-2); line-height: 1.45;
+  padding-left: 12px; position: relative;
+}
+.detail-highlights li::before {
+  content: "•"; position: absolute; left: 0;
+  color: var(--blue);
+}
+
+.detail-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.sheet-footer {
+  flex-shrink: 0;
+  padding: 12px 20px 20px;
+  display: flex; gap: 10px;
+  border-top: 1px solid var(--border);
+}
+.wishlist-btn {
+  flex: 1; padding: 11px;
+  border: 1.5px solid var(--border);
+  background: var(--bg); border-radius: 12px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: all .15s;
+}
+.wishlist-btn:hover { background: var(--surface); }
+.wishlist-btn.in-wishlist {
+  border-color: #e53935;
+  color: #e53935;
+  background: #fff8f7;
+}
+.buy-btn {
+  flex: 2; padding: 11px;
+  background: var(--blue); color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: background .15s;
+}
+.buy-btn:hover { background: var(--blue-dark); }
+
+/* ── 发现页 · 场景筛选器 ─────────────────────────────── */
+.dfilter-row {
+  display: flex; gap: 6px;
+  overflow-x: auto; scrollbar-width: none;
+  padding: 12px 16px 8px;
+  flex-shrink: 0;
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 2;
+  border-bottom: 1px solid var(--border);
+}
+.dfilter-row::-webkit-scrollbar { display: none; }
+.dfilter-btn {
+  flex-shrink: 0;
+  border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--text);
+  font-size: 12px; font-weight: 500;
+  padding: 5px 14px; border-radius: 999px;
+  cursor: pointer; transition: all .12s;
+  white-space: nowrap;
+}
+.dfilter-btn:hover { background: var(--surface); }
+.dfilter-btn.active {
+  background: var(--blue); color: #fff;
+  border-color: var(--blue);
+}
+
+/* ── 发现页 · 商品格子 ──────────────────────────────── */
+.discover-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 8px 16px 0;
+}
+.discover-loading {
+  grid-column: 1 / -1;
+  text-align: center; color: var(--text-3);
+  font-size: 13px; padding: 24px;
+}
+
+.discover-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px;
+  cursor: pointer; transition: box-shadow .12s;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.discover-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+.discover-card:active { transform: scale(.97); }
+
+.dc-thumb {
+  font-size: 28px;
+  background: var(--surface); border-radius: 10px;
+  height: 56px; display: flex; align-items: center; justify-content: center;
+}
+.dc-name {
+  font-size: 12px; font-weight: 600; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+  line-height: 1.35;
+}
+.dc-meta { display: flex; gap: 5px; align-items: center; }
+.dc-price { font-size: 14px; font-weight: 700; color: #c5221f; }
+
+/* ── 我的页 · 心愿单 ────────────────────────────────── */
+.wishlist-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  background: #e53935; color: #fff;
+  font-size: 10px; font-weight: 700;
+  border-radius: 50%; margin-left: 6px;
+  vertical-align: middle;
+}
+.wishlist-section {
+  background: var(--surface); border-radius: 16px;
+  overflow: hidden; margin-bottom: 4px;
+}
+.wishlist-empty {
+  font-size: 12px; color: var(--text-3);
+  text-align: center; padding: 20px 16px;
+}
+.wishlist-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s;
+}
+.wishlist-item:last-child { border-bottom: none; }
+.wishlist-item:hover { background: rgba(0,0,0,.02); }
+.wishlist-thumb { font-size: 24px; flex-shrink: 0; }
+.wishlist-info { flex: 1; min-width: 0; }
+.wishlist-name {
+  font-size: 13px; font-weight: 500; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wishlist-price { font-size: 12px; color: #c5221f; margin-top: 2px; }
+.wishlist-remove {
+  width: 24px; height: 24px;
+  border: none; background: var(--border);
+  border-radius: 50%; cursor: pointer;
+  font-size: 11px; color: var(--text-2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.wishlist-remove:hover { background: #fce8e6; color: #c5221f; }
