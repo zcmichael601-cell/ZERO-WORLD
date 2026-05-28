@@ -44,3 +44,9 @@ class DonePayload(BaseModel):
 class ErrorPayload(BaseModel):
     message: str
     code: str = "unknown"
+
+
+class SpecAnswerPayload(BaseModel):
+    answer: str
+    product_id: str = ""
+    product_name: str = ""

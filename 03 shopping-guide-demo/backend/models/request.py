@@ -11,6 +11,7 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=500)
     history: List[Message] = Field(default_factory=list)
     session_id: Optional[str] = None
+    focused_product_id: Optional[str] = None
 
     @field_validator("message")
     @classmethod

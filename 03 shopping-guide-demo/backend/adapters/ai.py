@@ -49,11 +49,13 @@ INTENT_TYPES = {
     "guided_shopping": "引导式购物（有需求但不确定要什么）",
     "cross_platform":  "跨平台比价",
     "out_of_scope":    "超出范围（非购物问题）",
+    "detail_inquiry":  "规格追问（这款支持快充吗）",
 }
 
 TRADITIONAL_INTENTS = {"direct_search", "time_sensitive"}
 LLM_INTENTS         = {"model_selection", "spec_comparison", "guided_shopping"}
 FALLBACK_INTENTS    = {"cross_platform", "out_of_scope"}
+DETAIL_INTENTS      = {"detail_inquiry"}
 
 
 # ── 本地规则快速路径 ─────────────────────────────────────────────────────
@@ -65,6 +67,28 @@ _COMPARE_WORDS = ["哪个好", "区别", "差别", "对比", "比较", "vs",
 _GUIDE_WORDS  = ["推荐", "帮我选", "选一款", "适合", "什么手机好",
                  "送礼", "预算", "需要一个", "想买"]
 _TIME_WORDS   = ["最新", "刚发布", "今年", "新款", "2026", "最近发布", "新出"]
+
+# detail_inquiry 检测
+_SPEC_Q_WORDS = ["快充", "充电", "电池", "续航", "芯片", "处理器",
+                 "像素", "相机", "摄像", "屏幕", "防水", "nfc",
+                 "存储", "参数", "规格", "5g", "mah"]
+_SPEC_Q_PATTERNS = [
+    r"支持.{0,8}吗", r"有没有.{0,8}", r"是否支持",
+    r".{0,6}多大", r".{0,6}多少.{0,4}[mMgG]",
+    r".{0,6}几[Ww寸]", r".{0,6}是什么", r".{0,6}怎么样",
+]
+_PRONOUN_REFS = ["这款", "这个", "它", "该机", "这部", "这手机"]
+
+
+def _is_detail_inquiry(msg: str) -> bool:
+    """快速判断是否为规格追问：需同时满足（规格词 + 疑问句式 + 商品指代）。"""
+    msg_lower = msg.lower()
+    has_spec = any(w in msg_lower for w in _SPEC_Q_WORDS)
+    has_q    = any(re.search(p, msg) for p in _SPEC_Q_PATTERNS)
+    has_ref  = (any(w in msg for w in _PRONOUN_REFS)
+                or (any(b in msg_lower for b in _BRAND_WORDS)
+                    and bool(re.search(r"\d{2,}", msg))))
+    return has_spec and has_q and has_ref
 
 def _rule_based_intent(message: str) -> IntentResult:
     msg = message.lower()
@@ -87,6 +111,11 @@ def _rule_based_intent(message: str) -> IntentResult:
     # cross_platform: 比价/哪里买
     if re.search(r"哪里买|哪买|更便宜|京东|淘宝|拼多多|哪个平台", msg):
         return IntentResult("cross_platform", 0.85, pipeline="fallback")
+
+    # detail_inquiry: 规格追问（这款支持快充吗 / iPhone16支持快充吗）
+    if _is_detail_inquiry(message):
+        return IntentResult("detail_inquiry", 0.88,
+                            slots=_extract_basic_slots(msg), pipeline="llm")
 
     # spec_comparison
     for pat in _COMPARE_WORDS:
@@ -434,3 +463,115 @@ async def _glm_rank(
         return rank_result
     except Exception:
         return _mock_rank(products, slots)
+
+
+# ── 规格追问答题 ──────────────────────────────────────────────────────────
+
+async def answer_spec_question(product: dict, question: str) -> str:
+    """先走规则答题，无规则命中时 fallback 到 GLM。"""
+    rule_answer = _spec_rule_answer(product, question)
+    if rule_answer:
+        return rule_answer
+    if config.USE_MOCK_AI:
+        return f"关于{product.get('title', '该产品')}的规格，建议查看商品详情页确认。"
+    return await _glm_spec_answer(product, question)
+
+
+def _spec_rule_answer(product: dict, question: str) -> Optional[str]:
+    msg  = question.lower()
+    name = product.get("title", "该产品")
+    highlights = product.get("highlights", [])
+
+    # 快充 / 充电速度
+    if re.search(r"快充|充电速度|充多少|几[wW]|充电[wW]|充电功率", msg):
+        for h in highlights:
+            m = re.search(r"(\d+)[wW](超充|快充|充电)", h)
+            if m:
+                return f"{name} 支持 {m.group(1)}W {'超' if '超' in m.group(2) else ''}快充。"
+        return f"关于 {name} 的快充规格，建议查看商品详情页确认。"
+
+    # 电池 / 续航
+    if re.search(r"电池|续航|mah|电量|耐用", msg):
+        mah = product.get("battery_mah")
+        if mah:
+            level = "大容量" if mah >= 5500 else ("较大" if mah >= 4500 else "标准")
+            return f"{name} 搭载 {mah}mAh {level}电池。"
+
+    # 芯片 / 处理器
+    if re.search(r"芯片|处理器|cpu|soc", msg):
+        chip = product.get("chip")
+        if chip:
+            return f"{name} 搭载 {chip} 处理器。"
+
+    # 存储
+    if re.search(r"存储|rom|多少[gG]|几个[gG]", msg):
+        storage = product.get("storage")
+        if storage:
+            return f"这款是 {storage}GB 存储版本。"
+
+    # 相机 / 像素
+    if re.search(r"相机|摄像|像素|拍照|摄影|镜头", msg):
+        mp = product.get("camera_mp")
+        cam_hl = [h for h in highlights if any(w in h for w in ["摄", "拍", "像素", "镜头", "变焦"])]
+        if mp and cam_hl:
+            return f"{name} 主摄 {mp}MP，亮点：{cam_hl[0]}。"
+        if mp:
+            return f"{name} 主摄为 {mp}MP。"
+        if cam_hl:
+            return "拍照亮点：" + "；".join(cam_hl[:2]) + "。"
+
+    # 屏幕 / 尺寸
+    if re.search(r"屏幕|尺寸|几寸|屏大", msg):
+        size = product.get("screen_size")
+        if size:
+            return f"{name} 屏幕尺寸为 {size} 英寸。"
+
+    # 防水
+    if re.search(r"防水|ip\d|泼水|溅水", msg):
+        for h in highlights:
+            if re.search(r"ip\d+|防水", h.lower()):
+                return f"{name} {h}。"
+        return f"关于 {name} 的防水等级，建议查看商品详情页确认。"
+
+    # NFC
+    if re.search(r"nfc|近场支付|碰一碰", msg):
+        for h in highlights:
+            if "nfc" in h.lower():
+                return f"{name} 支持 NFC。"
+        return f"关于 {name} 的 NFC 支持，建议查看商品详情页确认。"
+
+    # 5G
+    if re.search(r"5g|5[gG]网络", msg):
+        return f"{name} 支持 5G 网络。"
+
+    # 颜色
+    if re.search(r"颜色|配色|什么色", msg):
+        color = product.get("color")
+        if color:
+            return f"该款为{color}配色。"
+
+    # 价格
+    if re.search(r"价格|多少钱|售价|价位|多贵", msg):
+        price = product.get("price")
+        if price:
+            return f"{name} 售价 ¥{int(price):,}。"
+
+    return None
+
+
+async def _glm_spec_answer(product: dict, question: str) -> str:
+    prod_summary = {k: product.get(k) for k in
+                    ["title", "brand", "price", "chip", "storage",
+                     "battery_mah", "camera_mp", "screen_size", "color",
+                     "highlights", "tags"]}
+    system = (
+        "根据商品数据回答用户的规格问题，简洁（1-2句话）。"
+        "如数据中没有该信息，诚实说"建议查看商品详情页"，不要编造。\n\n"
+        f"商品：{json.dumps(prod_summary, ensure_ascii=False)}"
+    )
+    msgs = [{"role": "system", "content": system},
+            {"role": "user",   "content": question}]
+    try:
+        return await _call_glm(config.GLM_FAST_MODEL, msgs, max_tokens=100)
+    except Exception:
+        return "关于该问题，建议查看商品详情页获取准确信息。"

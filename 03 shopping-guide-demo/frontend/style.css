@@ -639,6 +639,27 @@ html, body { height: 100%; font-family: 'Roboto', 'Google Sans', sans-serif; }
 /* 错误包装（气泡 + 重试按钮）*/
 .error-wrap { display: flex; flex-direction: column; gap: 6px; }
 
+/* 规格追问答题 */
+.spec-answer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.spec-product-label {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 500;
+  padding: 0 4px;
+}
+
+.spec-answer-bubble {
+  background: linear-gradient(135deg, #e8f0fe 0%, #f1f3f4 100%);
+  border-left: 3px solid #4285f4;
+  border-radius: 4px 16px 16px 4px;
+  line-height: 1.55;
+}
+
 /* 重试按钮 */
 .retry-btn {
   align-self: flex-start;

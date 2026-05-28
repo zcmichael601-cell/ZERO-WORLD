@@ -20,11 +20,12 @@ import config
 from models.request import ChatRequest
 from models.response import (
     IntentPayload, ThinkingPayload, ClarifyPayload,
-    RankPayload, ProductItem, DonePayload, ErrorPayload,
+    RankPayload, ProductItem, DonePayload, ErrorPayload, SpecAnswerPayload,
 )
 from adapters.ai import (
     intent_router, clarification_generator, product_ranker,
-    TRADITIONAL_INTENTS, LLM_INTENTS, FALLBACK_INTENTS,
+    answer_spec_question,
+    TRADITIONAL_INTENTS, LLM_INTENTS, FALLBACK_INTENTS, DETAIL_INTENTS,
     _rank_cache,
 )
 from adapters.search import search_products
@@ -402,6 +403,63 @@ async def _llm_pipeline(
     yield _sse_done("llm", intent_result.intent_type, start_ms, clarify_turns)
 
 
+# ── 规格追问链路 ──────────────────────────────────────────────────────
+
+async def _detail_inquiry_pipeline(
+    req: ChatRequest,
+    intent_result,
+    start_ms: float,
+) -> AsyncGenerator[str, None]:
+    phones = json.loads(_DATA_PATH.read_text(encoding="utf-8"))
+
+    # 1. 优先用 focused_product_id 定位商品
+    product = None
+    if req.focused_product_id:
+        product = next((p for p in phones if p["id"] == req.focused_product_id), None)
+
+    # 2. 从消息槽位提取品牌，找同品牌第一款
+    if not product:
+        brand = intent_result.slots.get("brand", "")
+        if brand:
+            product = next((p for p in phones if p.get("brand") == brand), None)
+
+    # 3. 没有商品上下文 → 引导用户点击商品
+    if not product:
+        yield _sse("intent", IntentPayload(
+            intent_type = "detail_inquiry",
+            confidence  = intent_result.confidence,
+            pipeline    = "fallback",
+            slots       = intent_result.slots,
+        ).model_dump())
+        yield _sse("thinking", ThinkingPayload(
+            message="请先点击你感兴趣的商品，我再来回答具体规格问题～"
+        ).model_dump())
+        yield _sse_done("fallback", "detail_inquiry", start_ms)
+        return
+
+    yield _sse("intent", IntentPayload(
+        intent_type = "detail_inquiry",
+        confidence  = intent_result.confidence,
+        pipeline    = "llm",
+        slots       = intent_result.slots,
+    ).model_dump())
+    yield _sse("thinking", ThinkingPayload(
+        message=f"正在查询 {product['title']} 的参数…"
+    ).model_dump())
+
+    try:
+        answer = await answer_spec_question(product, req.message)
+    except Exception:
+        answer = "关于该问题，建议查看商品详情页获取准确信息。"
+
+    yield _sse("spec_answer", SpecAnswerPayload(
+        answer       = answer,
+        product_id   = product["id"],
+        product_name = product["title"],
+    ).model_dump())
+    yield _sse_done("llm", "detail_inquiry", start_ms)
+
+
 # ── 主路由入口 ────────────────────────────────────────────────────────
 
 @app.post("/chat")
@@ -426,7 +484,11 @@ async def chat(request: Request):
             history = [m.model_dump() for m in req.history]
             intent_result = await intent_router(req.message, history)
 
-            if intent_result.pipeline == "traditional":
+            if intent_result.intent_type in DETAIL_INTENTS:
+                async for chunk in _detail_inquiry_pipeline(req, intent_result, start_ms):
+                    yield chunk
+
+            elif intent_result.pipeline == "traditional":
                 async for chunk in _traditional_pipeline(req, intent_result, start_ms):
                     yield chunk
 

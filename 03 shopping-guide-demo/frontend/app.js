@@ -5,11 +5,12 @@ const chatWindow = document.getElementById("chatWindow");
 const userInput  = document.getElementById("userInput");
 const sendBtn    = document.getElementById("sendBtn");
 
-let history     = [];
-let chatStarted = false;
-let isLoading   = false;
-let sessionId   = _uuid();
-let lastQuery   = "";  // for retry on error
+let history           = [];
+let chatStarted       = false;
+let isLoading         = false;
+let sessionId         = _uuid();
+let lastQuery         = "";  // for retry on error
+let focusedProductId  = null;  // 当前打开详情的商品 ID，用于 detail_inquiry
 
 function _uuid() {
   return "s-" + Math.random().toString(36).slice(2, 10);
@@ -140,9 +141,10 @@ async function sendMessage() {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({
-        message:    text,
-        history:    history.slice(0, -1),
-        session_id: sessionId,
+        message:             text,
+        history:             history.slice(0, -1),
+        session_id:          sessionId,
+        focused_product_id:  focusedProductId,
       }),
     });
 
@@ -185,6 +187,12 @@ async function sendMessage() {
             removeThinking(botRow);
             addClarifyBubble(botRow, data);
             assistantText = data.question;
+            break;
+
+          case "spec_answer":
+            removeThinking(botRow);
+            addSpecAnswerBubble(botRow, data);
+            assistantText = data.answer;
             break;
 
           case "product":
@@ -274,6 +282,7 @@ function showIntentBadge(row, data) {
     guided_shopping: "🛒 引导购物",
     cross_platform:  "🌐 比价查询",
     out_of_scope:    "💬 超出范围",
+    detail_inquiry:  "📋 规格追问",
   };
   const label    = map[data.intent_type] || data.intent_type;
   const pipeline = { traditional: "传统搜索", llm: "AI 链路", fallback: "兜底" }[data.pipeline] || data.pipeline;
@@ -433,6 +442,26 @@ function addFeedbackRow(row) {
   body.appendChild(el);
 }
 
+function addSpecAnswerBubble(row, data) {
+  const body   = getBody(row);
+  const wrap   = document.createElement("div");
+  wrap.className = "spec-answer-wrap";
+
+  if (data.product_name) {
+    const label = document.createElement("div");
+    label.className = "spec-product-label";
+    label.textContent = `📋 ${data.product_name}`;
+    wrap.appendChild(label);
+  }
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble bot spec-answer-bubble";
+  bubble.textContent = data.answer;
+  wrap.appendChild(bubble);
+
+  body.appendChild(wrap);
+}
+
 function addErrorBubble(row, msg, showRetry = false) {
   const body = getBody(row);
   const el   = document.createElement("div");
@@ -536,6 +565,7 @@ function showProductDetail(product) {
 
   fetchDetail.then(full => {
     const p = full || product;
+    focusedProductId = p.id || null;
     _renderDetailSheet(p);
   });
 }
@@ -643,6 +673,7 @@ function _closeDetailSheet() {
   if (sheet)   { sheet.classList.remove("visible"); }
   if (overlay) { overlay.classList.remove("visible"); }
   setTimeout(() => { sheet?.remove(); overlay?.remove(); }, 280);
+  focusedProductId = null;
 }
 
 function _refreshWishlistViews() {

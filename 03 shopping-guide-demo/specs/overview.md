@@ -90,7 +90,8 @@ AI 大模型正在重构购物体验入口。Amazon Rufus 已证明：嵌入购�
 ## 三、功能范围
 
 详细功能规范见 `specs/features/` 目录：
-- `chat.md`：**对话导购功能（核心）**，含三链路 Workflow 完整设计 ← 最重要
+- `product-architecture.md`：**系统产品架构（顶层设计）**，所有功能规范的框架基础 ← 先读这个
+- `chat.md`：**对话导购功能（核心）**，含三链路 Workflow 完整设计
 - `discover.md`：发现页（待完成）
 - `profile.md`：我的页（待完成）
 
