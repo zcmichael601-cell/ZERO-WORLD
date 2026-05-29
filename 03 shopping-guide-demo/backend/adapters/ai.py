@@ -566,7 +566,7 @@ async def _glm_spec_answer(product: dict, question: str) -> str:
                      "highlights", "tags"]}
     system = (
         "根据商品数据回答用户的规格问题，简洁（1-2句话）。"
-        "如数据中没有该信息，诚实说"建议查看商品详情页"，不要编造。\n\n"
+        "如数据中没有该信息，诚实说建议查看商品详情页，不要编造。\n\n"
         f"商品：{json.dumps(prod_summary, ensure_ascii=False)}"
     )
     msgs = [{"role": "system", "content": system},
