@@ -76,8 +76,12 @@ _SPEC_Q_PATTERNS = [
     r"支持.{0,8}吗", r"有没有.{0,8}", r"是否支持",
     r".{0,6}多大", r".{0,6}多少.{0,4}[mMgG]",
     r".{0,6}几[Ww寸]", r".{0,6}是什么", r".{0,6}怎么样",
+    r"\S{1,6}吗$",     # 兜底：直接 X吗 结尾（防水吗/NFC吗）
 ]
 _PRONOUN_REFS = ["这款", "这个", "它", "该机", "这部", "这手机"]
+# 型号级关键词（配合数字检测用）
+_MODEL_WORDS  = ["mate", "nova", "pura", "galaxy", "ace", "find",
+                 "magic", "civi", "note", "ultra", "pro", "plus"]
 
 
 def _is_detail_inquiry(msg: str) -> bool:
@@ -85,9 +89,10 @@ def _is_detail_inquiry(msg: str) -> bool:
     msg_lower = msg.lower()
     has_spec = any(w in msg_lower for w in _SPEC_Q_WORDS)
     has_q    = any(re.search(p, msg) for p in _SPEC_Q_PATTERNS)
-    has_ref  = (any(w in msg for w in _PRONOUN_REFS)
-                or (any(b in msg_lower for b in _BRAND_WORDS)
-                    and bool(re.search(r"\d{2,}", msg))))
+    has_pronoun = any(w in msg for w in _PRONOUN_REFS)
+    brand_hit   = (any(b in msg_lower for b in _BRAND_WORDS)
+                   or any(m in msg_lower for m in _MODEL_WORDS))
+    has_ref = has_pronoun or (brand_hit and bool(re.search(r"\d{2,}", msg)))
     return has_spec and has_q and has_ref
 
 def _rule_based_intent(message: str) -> IntentResult:
