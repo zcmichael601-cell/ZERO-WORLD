@@ -1,0 +1,449 @@
+<title>Claude Code 能力清单</title>
+<style>
+  :root {
+    --ground: #F5F3EF;
+    --surface: #FDFCFA;
+    --ink: #211C16;
+    --muted: #6F675C;
+    --faint: #A39A8D;
+    --line: #E4DFD6;
+    --code-bg: #ECE8E0;
+    --accent: #A8451F;
+    --ok: #33714A;
+    --warn: #946200;
+    --off: #8B8378;
+    /* 终端块在两个主题下都保持暗色，故用固定色 */
+    --term-bg: #23201B;
+    --term-edge: #3A352C;
+    --term-ink: #EAE3D7;
+    --term-dim: #9B9284;
+    --term-mark: #E8794F;
+    --term-ok: #8CC79B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #161310;
+      --surface: #1E1A16;
+      --ink: #EDE6DA;
+      --muted: #A69C8D;
+      --faint: #756C5F;
+      --line: #322D25;
+      --code-bg: #26211C;
+      --accent: #E58157;
+      --ok: #8CC79B;
+      --warn: #D9A94F;
+      --off: #95897A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #161310;
+    --surface: #1E1A16;
+    --ink: #EDE6DA;
+    --muted: #A69C8D;
+    --faint: #756C5F;
+    --line: #322D25;
+    --code-bg: #26211C;
+    --accent: #E58157;
+    --ok: #8CC79B;
+    --warn: #D9A94F;
+    --off: #95897A;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "PingFang SC", "Noto Sans SC", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+    padding-inline: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin-inline: auto; padding-block: 56px 64px; }
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  /* ── Masthead ─────────────────────────────── */
+  .prompt-line {
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+  .prompt-line .dim { color: var(--faint); }
+  h1 {
+    font-size: clamp(34px, 6vw, 46px);
+    font-weight: 900;
+    line-height: 1.15;
+    margin: 14px 0 12px;
+    text-wrap: balance;
+  }
+  .lede {
+    max-width: 620px;
+    color: var(--muted);
+    font-size: 16px;
+    margin: 0;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin-top: 22px;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .meta b { color: var(--ink); font-weight: 600; }
+
+  /* ── Terminal hero ────────────────────────── */
+  .terminal {
+    margin-top: 40px;
+    background: var(--term-bg);
+    border: 1px solid var(--term-edge);
+    border-radius: 10px;
+    padding: 18px 22px;
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 2.05;
+    color: var(--term-ink);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .terminal .u { color: var(--term-ink); }
+  .terminal .u .ps { color: var(--term-mark); font-weight: 600; }
+  .terminal .mark { color: var(--term-mark); font-weight: 700; }
+  .terminal .tool { font-weight: 600; }
+  .terminal .note { color: var(--term-dim); }
+  .terminal .done { color: var(--term-ok); }
+
+  /* ── Sections ─────────────────────────────── */
+  section { margin-top: 64px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 6px 0 18px;
+    text-wrap: balance;
+  }
+
+  .cap {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 6px 24px;
+    padding: 15px 0;
+    border-top: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .cap:last-of-type { border-bottom: 1px solid var(--line); }
+  .cap code {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cap p { margin: 0; color: var(--muted); }
+  .cap p b { color: var(--ink); font-weight: 600; }
+  .cap p code.inline {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: var(--ink);
+  }
+
+  /* ── 浏览器分层 ───────────────────────────── */
+  .depth {
+    margin-top: 26px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 6px 20px;
+  }
+  .depth-title {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--faint);
+    padding: 12px 0 4px;
+  }
+  .layer {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 4px 18px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .layer:first-of-type { border-top: none; }
+  .layer .l-tag {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .layer h3 { margin: 0; font-size: 15px; font-weight: 700; }
+  .layer p { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+  .status {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    white-space: nowrap;
+    align-self: center;
+  }
+  .status.ok { color: var(--ok); }
+  .status.warn { color: var(--warn); }
+  .status.off { color: var(--off); }
+
+  /* ── 边界面板 ─────────────────────────────── */
+  .limits {
+    margin-top: 20px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 8px 22px;
+  }
+  .limit {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 6px 24px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .limit:first-child { border-top: none; }
+  .limit h3 {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .limit p { margin: 0; font-size: 14px; color: var(--muted); }
+  .limit p code.inline {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: var(--ink);
+  }
+
+  footer {
+    margin-top: 72px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--faint);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 560px) {
+    .cap, .limit { grid-template-columns: 1fr; gap: 2px 0; }
+    .layer { grid-template-columns: 32px 1fr; }
+    .layer .status { grid-column: 2; justify-self: start; }
+    body { padding-inline: 18px; }
+    .terminal { font-size: 12px; padding: 14px 16px; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .wrap { animation: rise 0.5s ease-out both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="prompt-line mono">zhaochen@macbook ~ % <span class="dim">claude --capabilities</span></p>
+    <h1>能力清单</h1>
+    <p class="lede">这台 Mac 上的 Claude Code 能做什么、怎么用、边界在哪——一页说完，条条可以当场验证。</p>
+    <div class="meta">
+      <span>模型 · <b>Claude Opus 5</b></span>
+      <span>环境 · <b>macOS (Apple Silicon)</b></span>
+      <span>更新 · <b>2026-10-20</b></span>
+    </div>
+  </header>
+
+  <div class="terminal" role="img" aria-label="一次真实会话的示意">
+<span class="u"><span class="ps">%</span> claude "把这个后台的表格导出成 Excel"</span>
+<span class="mark">⏺</span> <span class="tool">Bash</span>    npx playwright install chromium
+<span class="mark">⏺</span> <span class="tool">Agent</span>   登录后台 → 定位表格 → 逐页抓取
+<span class="mark">⏺</span> <span class="tool">Write</span>   ~/Downloads/export.xlsx
+<span class="done">   ✓ 导出完成 — 128 行，用时 42 秒</span></div>
+
+  <section>
+    <p class="eyebrow">Files &amp; Code</p>
+    <h2>代码与文件</h2>
+    <div class="cap">
+      <code>Read · Write · Edit</code>
+      <p>读写、编辑任意本地文件。改之前先读，改了什么一目了然。</p>
+    </div>
+    <div class="cap">
+      <code>Glob · Grep</code>
+      <p>按文件名或内容搜索整个工作区，大型代码库里秒级定位。</p>
+    </div>
+    <div class="cap">
+      <code>理解与修改代码</code>
+      <p>读懂陌生代码库、修 bug、重构、加新功能，写出来跟随项目既有风格。</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Shell</p>
+    <h2>终端</h2>
+    <div class="cap">
+      <code>Bash</code>
+      <p>构建、跑测试、装依赖、git 提交开 PR——命令行能做的都行。</p>
+    </div>
+    <div class="cap">
+      <code>后台任务 · Monitor</code>
+      <p>长任务挂到后台，跑完叫你；盯日志，一出 ERROR 就报。</p>
+    </div>
+    <div class="cap">
+      <code>定时任务 Cron</code>
+      <p>「每天早上九点检查一次部署」这类固定节奏的活，挂上就不用管。</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Web · Browser</p>
+    <h2>网络与浏览器</h2>
+    <div class="cap">
+      <code>WebSearch · WebFetch</code>
+      <p>搜索网页，抓正文转成干净的可读格式。</p>
+    </div>
+    <div class="cap">
+      <code>curl</code>
+      <p>调 API、下载资源、调试接口。</p>
+    </div>
+    <div class="cap">
+      <code>open</code>
+      <p>用默认浏览器打开网址或本地文件。</p>
+    </div>
+    <div class="cap">
+      <code>Playwright 脚本</code>
+      <p>写 Node 脚本驱动真实 Chrome 做自动化——能到哪一层，看下面的标尺。</p>
+    </div>
+
+    <div class="depth">
+      <p class="depth-title">浏览器操作能到哪一层</p>
+      <div class="layer">
+        <span class="l-tag">L1</span>
+        <div>
+          <h3>HTTP 层</h3>
+          <p>拿到原始 HTML / JSON，页面不渲染、JS 不执行。适合调 API、抓静态内容、调试接口。</p>
+        </div>
+        <span class="status ok">现在就能</span>
+      </div>
+      <div class="layer">
+        <span class="l-tag">L2</span>
+        <div>
+          <h3>浏览器自动化</h3>
+          <p>驱动真实 Chrome：页面完整渲染，按元素定位去点击、填表、截图、爬动态页。首次需装 Playwright 依赖。</p>
+        </div>
+        <span class="status warn">可装即用</span>
+      </div>
+      <div class="layer">
+        <span class="l-tag">L3</span>
+        <div>
+          <h3>视觉级操作</h3>
+          <p>看屏幕、算坐标、像人一样点。Computer Use 能力未接入当前会话。</p>
+        </div>
+        <span class="status off">本环境没有</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Pages</p>
+    <h2>页面与可视化</h2>
+    <div class="cap">
+      <code>Artifact</code>
+      <p>发布可交互的网页：demo、数据面板、图表、小游戏，带独立链接，改了自动更新。</p>
+    </div>
+    <div class="cap">
+      <code>本页即产物</code>
+      <p>你现在看的这一页，就是刚用它发布的。</p>
+    </div>
+    <div class="cap">
+      <code>本地文件</code>
+      <p>也可以直接落成 <code class="inline">.html</code> / <code class="inline">.md</code> 文件存到磁盘。</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Agents · Memory</p>
+    <h2>自动化与协作</h2>
+    <div class="cap">
+      <code>子代理 Agent</code>
+      <p>派出多个代理并行搜代码、跑调研，只收回结论，不占主线。</p>
+    </div>
+    <div class="cap">
+      <code>持久记忆</code>
+      <p>跨会话记住偏好和背景：内网限制、咚咚机器人进度、工作习惯，下次开口直接接上。</p>
+    </div>
+    <div class="cap">
+      <code>Skills</code>
+      <p>把重复流程固化成 <code class="inline">/命令</code>，下次一键调用。</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">This Machine</p>
+    <h2>本机专属</h2>
+    <div class="cap">
+      <code>Obsidian</code>
+      <p>走本地 socket 直接操作你的笔记库。</p>
+    </div>
+    <div class="cap">
+      <code>git 仓库</code>
+      <p>当前就在 <code class="inline">Zero World</code> 仓库里，历史带自动同步。</p>
+    </div>
+    <div class="cap">
+      <code>在建项目</code>
+      <p><code class="inline">~/dongdong-claude-bot</code>（咚咚机器人，后端已跑通）、桌面上的百策演示。</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Limits</p>
+    <h2>边界——做不了的也写清楚</h2>
+    <div class="limits">
+      <div class="limit">
+        <h3>内网穿透</h3>
+        <p>DNS 屏蔽 <code class="inline">trycloudflare</code> / <code class="inline">ngrok</code> / <code class="inline">cpolar</code>，穿透方案走不通；对外服务走服务器部署。</p>
+      </div>
+      <div class="limit">
+        <h3>视觉级操作</h3>
+        <p>Computer Use 未接入，浏览器只能做到自动化层，不能「看着屏幕点」。</p>
+      </div>
+      <div class="limit">
+        <h3>危险动作</h3>
+        <p>删文件、覆盖、对外发布之前，先经你确认再动手。</p>
+      </div>
+      <div class="limit">
+        <h3>权限边界</h3>
+        <p>每次工具调用都受你设定的权限模式约束；被拒就换路走，不硬来。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>由 Claude Code 生成并发布</span>
+    <span>2026-10-20 · 有哪条想验证，直接开口</span>
+  </footer>
+</div>
