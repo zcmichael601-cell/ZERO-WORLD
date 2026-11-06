@@ -1,0 +1,10 @@
+[hidden] { display: none !important; }
+#chat-view { display: flex; margin-left: 228px; height: 100dvh; }
+#chat-view .chat-sidebar { width: 210px; }
+#chat-view .new-chat { margin-top: 0; }
+#chat-view .model-badge { max-width: 45%; }
+#chat-model-label { overflow: hidden; text-overflow: ellipsis; }
+body[data-view="chat"] { overflow: hidden; }
+@media (max-width: 1150px) { #chat-view { margin-left: 195px; } #chat-view .chat-sidebar { width: 180px; padding: 20px 12px; } }
+@media (max-width: 850px) { #chat-view { margin-left: 165px; flex-direction: column; } #chat-view .chat-sidebar { width: 100%; max-height: 170px; padding: 12px; } #chat-view .new-chat { margin-bottom: 10px; } #chat-view .history-heading { padding-top: 0; } #chat-view #conversations { display: flex; overflow-x: auto; flex-shrink: 0; } #chat-view .history-item { width: 125px; min-width: 125px; margin-bottom: 0; } #chat-view .sidebar-bottom { display: none; } #chat-view .workspace { min-height: 0; } }
+@media (max-width: 600px) { #chat-view { margin-left: 0; height: calc(100dvh - 62px); } #chat-view .chat-sidebar { flex-wrap: wrap; } #chat-view #conversations { flex: 1; } }

@@ -1,0 +1,6 @@
+[
+  {"keyword":"电视", "category":"电视", "tags":["电视","家电","影音"], "icon":"📺", "limit":30},
+  {"keyword":"显示器", "category":"显示器", "tags":["显示器","数码","办公"], "icon":"🖥️", "limit":30},
+  {"keyword":"无线路由器", "category":"路由器", "tags":["路由器","数码","网络"], "icon":"📶", "limit":30},
+  {"keyword":"吹风机", "category":"吹风机", "tags":["吹风机","个护","家电"], "icon":"🛍️", "limit":30}
+]

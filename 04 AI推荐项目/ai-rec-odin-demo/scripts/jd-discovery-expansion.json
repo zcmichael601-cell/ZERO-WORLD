@@ -1,0 +1,10 @@
+[
+  {"keyword":"运动水杯","category":"运动水杯","tags":["跑步","户外","健康"],"icon":"🥤","limit":12},
+  {"keyword":"运动手环","category":"运动手环","tags":["跑步","健康","数码"],"icon":"⌚","limit":12},
+  {"keyword":"登山杖","category":"登山杖","tags":["户外","健康"],"icon":"🥾","limit":12},
+  {"keyword":"露营帐篷","category":"露营帐篷","tags":["户外"],"icon":"⛺","limit":12},
+  {"keyword":"便携蓝牙音箱","category":"蓝牙音箱","tags":["音频","数码"],"icon":"🔊","limit":12},
+  {"keyword":"无线鼠标","category":"无线鼠标","tags":["数码","办公"],"icon":"🖱️","limit":12},
+  {"keyword":"厨房置物架","category":"厨房收纳","tags":["家居","厨房"],"icon":"🗃️","limit":12},
+  {"keyword":"空气炸锅","category":"空气炸锅","tags":["厨房","家居"],"icon":"🍲","limit":12}
+]

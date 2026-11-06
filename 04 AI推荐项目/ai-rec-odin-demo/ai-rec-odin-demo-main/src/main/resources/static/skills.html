@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Odin · AI 工作空间</title>
+  <link rel="stylesheet" href="skills.css?v=20261105-session-focus">
+  <link rel="stylesheet" href="chat.css">
+  <link rel="stylesheet" href="workspace.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="#skills" class="brand"><span class="brand-symbol">o</span> odin <small>WORKSPACE</small></a>
+    <div class="nav-label">工作空间</div>
+    <nav aria-label="主导航">
+      <a href="#chat" data-view="chat"><span aria-hidden="true">◯</span> AI 对话</a>
+      <a href="#skills" data-view="skills" class="active" aria-current="page"><span aria-hidden="true">✳</span> Skill 实验室 <span class="nav-tag">LAB</span></a>
+    </nav>
+    <div class="sidebar-card"><span class="small-label">LOCAL FIRST</span><h3>把能力，连接起来。</h3><p>一个配置，多步协作。<br>让每一次推荐都有迹可循。</p><div class="node-line">配置 <span>→</span> Skill <span>→</span> Tools</div></div>
+    <div class="sidebar-footer"><span class="green-dot"></span> 真实模型 · 多源工具<small>天气与景点实时请求外部来源</small></div>
+  </aside>
+  <main id="skill-view">
+    <header class="topbar"><div>工作空间 <span>/</span> <strong>Skill 实验室</strong></div><span class="mode-badge"><span class="green-dot"></span> LIVE MODEL</span></header>
+    <div class="page-content">
+      <section id="startup-error" class="panel" role="alert" hidden><h2>页面加载未完成</h2><p id="startup-error-details"></p><button id="startup-reload" class="text-button" type="button">重新加载页面</button></section>
+      <noscript><p role="alert">此页面需要启用 JavaScript 才能加载 Skill 和用户列表。</p></noscript>
+      <section class="hero"><div><div class="eyebrow">FROM INSIGHT TO DISCOVERY</div><h1>懂你所需，发现好物<span>。</span></h1><p>模型加载技能、自主调用工具，再分析需求与推荐。<br><span id="model-label">正在读取当前模型…</span></p></div><div class="hero-symbol" aria-hidden="true">✳</div></section>
+      <div class="workbench">
+        <section class="panel configuration" aria-labelledby="config-title">
+          <div class="section-heading"><h2 id="config-title">配置一次探索</h2><span class="subtle">01 / INPUT</span></div>
+          <form id="skill-form">
+            <label for="skill-select">选择 Skill</label>
+            <select id="skill-select" disabled><option>正在加载本地配置…</option></select>
+            <p id="skill-description" class="field-hint">从服务端读取已启用的 Skill。</p>
+            <div id="input-fields"></div>
+            <section id="user-preview" class="user-preview" aria-label="所选用户的兴趣与历史行为" aria-live="polite" hidden></section>
+            <p id="skill-estimate" class="skill-estimate" aria-live="polite">正在读取预计耗时…</p>
+            <button id="run-button" class="primary-button" type="submit" disabled><span>运行 Skill</span><span aria-hidden="true">↗</span></button>
+          </form>
+          <div class="config-note"><span aria-hidden="true">⌘</span><p>本地 JSON + SKILL.md 指令<small>模型按需加载，原生 Tool Calling</small></p><button id="show-config" class="text-button" type="button" disabled>查看配置</button></div>
+        </section>
+        <section class="panel workflow" aria-labelledby="workflow-title">
+          <div class="section-heading"><h2 id="workflow-title">Skill 可用工具</h2><span id="run-state" class="state-badge">等待运行</span></div>
+          <p class="field-hint">先由模型调用 Skill 加载指令，再由模型选择工具和参数。实际顺序见运行轨迹。</p>
+          <ol id="workflow-steps" class="workflow-steps"></ol>
+          <div class="workflow-footer"><span id="tool-count">正在发现可用工具…</span><span>可追溯 · 可配置 · 可扩展</span></div>
+        </section>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <button id="retry-load" class="text-button" type="button" hidden>重新加载配置</button>
+      <section id="progress-panel" class="panel progress-panel" aria-label="真实执行进度" hidden>
+        <div class="section-heading"><h2>实时执行进度</h2><span id="progress-count" class="subtle">等待服务端事件</span></div>
+        <div class="timing-heading"><span>预计完成进度</span><strong id="timing-percent">0%</strong></div>
+        <div id="skill-progress-bar" class="skill-progress-bar" role="progressbar" aria-label="Skill 预计执行进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="skill-progress-fill" class="skill-progress-fill"></div></div>
+        <div class="timing-metrics">
+          <div><span>已用时间</span><strong id="timing-elapsed">0 毫秒</strong></div>
+          <div><span>预计剩余</span><strong id="timing-remaining">—</strong></div>
+          <div><span>开始时预计</span><strong id="timing-expected">—</strong></div>
+        </div>
+        <p id="timing-note" class="field-hint"></p>
+        <p id="timing-basis" class="field-hint"></p>
+        <p id="timing-error" class="field-hint" hidden></p>
+        <p id="progress-current" class="progress-current"></p>
+        <details class="stage-timings" open><summary>各阶段耗时<span>进行中为本机推算，最终以服务端计时为准</span></summary>
+          <div class="timing-table-wrap"><table class="timing-table"><thead><tr><th scope="col">执行阶段</th><th scope="col">预计累计</th><th scope="col">已用累计</th><th scope="col">进入次数</th><th scope="col">状态</th></tr></thead><tbody id="timing-stages"></tbody></table></div>
+        </details>
+        <p class="field-hint">以下信息来自服务端实际执行节点，展示当前步骤和已完成事项。</p>
+        <ol id="progress-events" class="progress-events" aria-label="执行过程记录"></ol>
+      </section>
+      <section id="empty-state" class="empty-state"><div aria-hidden="true">✧</div><h2>下一份惊喜，从了解开始</h2><p>选择 Skill，探索好物、购物偏好，或结合真实天气与兴趣规划北京出游。</p><span>01 加载技能 <i>→</i> 02 调用工具 <i>→</i> 03 模型推荐</span></section>
+      <section id="model-stream-panel" class="panel model-stream-panel" aria-label="大模型实时输出" hidden>
+        <div class="section-heading"><h2>大模型实时输出</h2><span id="model-stream-state" class="subtle" role="status">等待模型返回内容</span></div>
+        <p class="field-hint">内容随模型返回实时呈现，生成过程中尚未校验；完成后自动整理为结果卡片。不展示内部推理过程。</p>
+        <pre id="model-stream-content" class="model-stream-content" aria-label="正在生成的结果" tabindex="0"></pre>
+      </section>
+      <section id="results" hidden aria-label="Skill 运行结果" aria-busy="false">
+        <div class="results-heading"><h2>本次探索结果 <span id="result-user"></span></h2><span id="run-meta"></span></div>
+        <section id="summary-panel" class="panel model-summary" hidden><div class="section-heading"><h2>大模型分析总结</h2><span class="subtle">MODEL GENERATED</span></div><p id="model-summary"></p></section>
+        <div id="user-context-host">
+          <div id="user-context-grid" class="insight-grid user-context-grid">
+            <section id="profile-panel" class="panel" hidden><details id="profile-details" class="context-details" open><summary class="section-heading"><h2>用户画像</h2><span class="subtle">PROFILE</span></summary><div id="profile-content"></div></details></section>
+            <section id="history-panel" class="panel" hidden><details id="history-details" class="context-details" open><summary class="section-heading"><h2>历史行为</h2><span class="subtle">AI MEMORY</span></summary><div id="history-content"></div></details></section>
+            <section id="session-panel" class="panel session-panel" hidden><div class="section-heading"><h2>实时行为</h2><span class="subtle">当前页面会话</span></div><div id="session-content"></div></section>
+          </div>
+        </div>
+        <section id="needs-panel" class="panel needs-panel" hidden><div class="section-heading"><h2>需求预测</h2><span class="subtle">大模型分析 · 非固定规则</span></div><div id="needs-content"></div></section>
+        <section id="products-panel" class="products-section" hidden><div class="section-heading"><h2>为你发现的好物 <span id="product-count" class="count-badge"></span></h2><span class="subtle">个性化推荐 · 价格以商家信息为准</span></div><p id="comparison-summary" class="comparison-summary" hidden></p><div class="product-stage"><section id="interest-panel" class="panel interest-panel" hidden><div class="section-heading"><h2>用户兴趣</h2><span class="subtle">旁路大模型 · 点击后实时变化</span></div><p class="field-hint">旁路大模型结合用户画像、历史行为和本会话点击/曝光未点击独立打分，不写入推荐 Agent。</p><p id="interest-summary" class="interest-summary"></p><div id="interest-content" class="interest-content"></div></section><div id="products-content" class="product-grid"></div></div><section id="interaction-controls" class="interaction-controls" aria-label="下一屏" hidden><div><strong id="interaction-screen">第 1 屏</strong><span id="interaction-status">本屏商品将记录为模拟曝光</span></div><div id="interaction-clicks" class="interaction-clicks"></div><button id="next-screen-button" class="primary-button" type="button" hidden disabled><span>展示更多</span><span aria-hidden="true">↻</span></button></section></section>
+        <section id="prediction-panel" class="prediction-section" hidden aria-label="购物行为与偏好预测"></section>
+        <section id="travel-panel" class="travel-section" hidden aria-label="北京天气与兴趣出游推荐"></section>
+        <section class="panel trace-panel"><div class="section-heading"><h2>各轮模型结果与耗时</h2><span class="subtle">ROUND · RESULT · LATENCY</span></div><p class="field-hint">每一屏的模型决策、召回结果和耗时会追加保留，展示更多不会覆盖上一屏。</p><div id="model-turns"></div></section>
+        <section class="panel trace-panel"><div class="section-heading"><h2>工具调用轨迹</h2><span class="subtle">TOOL TRACE</span></div><p class="field-hint">参数由模型生成，执行结果通过 ToolResponseMessage 回传模型。耗时为服务端实测。</p><div id="traces"></div><details class="raw-output"><summary>完整执行结果 JSON</summary><pre id="raw-output"></pre></details></section>
+      </section>
+      <footer class="page-footer">分析和推荐由大模型生成，仅供参考。天气来源 Open-Meteo（CC BY 4.0），景点来源携程公开榜单。限非商业使用，榜单热度非实时客流。</footer>
+    </div>
+  </main>
+  <dialog id="config-dialog" aria-labelledby="config-dialog-title"><div class="section-heading"><h2 id="config-dialog-title">当前 Skill 配置</h2><form method="dialog"><button aria-label="关闭配置" class="text-button">关闭 ✕</button></form></div><p class="field-hint">此处只读。修改本地配置和 SKILL.md 后重启生效。完整指令由模型调用 Skill 工具时加载。</p><pre id="config-json"></pre><h2>SKILL.md</h2><pre id="config-instructions"></pre></dialog>
+  <section id="chat-view" aria-label="AI 对话" hidden>
+  <aside class="chat-sidebar" aria-label="会话导航">
+    <button class="new-chat" id="new-chat" type="button"><span aria-hidden="true">＋</span> 开启新对话 <span class="shortcut" aria-hidden="true">↗</span></button>
+    <div class="history-heading">最近对话 <button id="clear-history" class="text-button" type="button">清空</button></div>
+    <nav id="conversations" aria-label="最近对话"></nav>
+    <div class="sidebar-bottom"><span class="local-dot"></span><div>你的灵感，随时开始<small>记录保存在当前浏览器，可随时清空</small></div></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><div><span class="product-name">Odin Assistant</span><span class="header-divider">/</span><span class="muted">智能对话</span></div><span class="model-badge"><span></span><span id="chat-model-label">当前配置模型</span></span></header>
+    <div class="conversation-scroll" id="conversation-scroll">
+      <section class="welcome" id="welcome">
+        <div class="welcome-symbol" aria-hidden="true">✳</div>
+        <div class="eyebrow">A LITTLE CURIOSITY. ENDLESS POSSIBILITIES.</div>
+        <h1>从一个问题，<br>开始更多可能。</h1>
+        <p>无论是梳理思路、编写代码，还是探索新知，<br class="desktop-break">让 Odin 陪你一起找到答案。</p>
+        <div class="suggestions">
+          <button type="button" data-prompt="帮我把一个复杂任务拆解成清晰、可执行的步骤。请先询问我的任务目标。"><span class="suggestion-icon violet">⌘</span><strong>理清思路</strong><span>把复杂问题，变成清晰步骤</span><i aria-hidden="true">↗</i></button>
+          <button type="button" data-prompt="请用 Java 编写一个简单的 HTTP 请求示例，并解释关键代码。"><span class="suggestion-icon blue">&lt;/&gt;</span><strong>一起写代码</strong><span>从一个想法，到可运行的代码</span><i aria-hidden="true">↗</i></button>
+          <button type="button" data-prompt="帮我写一封简洁、专业的项目进展邮件。请先询问你需要的信息。"><span class="suggestion-icon amber">✎</span><strong>打磨表达</strong><span>让文字更准确，也更有力量</span><i aria-hidden="true">↗</i></button>
+          <button type="button" data-prompt="请用通俗的比喻解释大语言模型是如何工作的。"><span class="suggestion-icon green">✧</span><strong>探索新知</strong><span>换个角度，理解一个新概念</span><i aria-hidden="true">↗</i></button>
+        </div>
+      </section>
+      <section id="messages" class="messages" aria-label="聊天消息" aria-busy="false"></section>
+    </div>
+    <footer class="composer-area">
+      <div id="chat-status" class="status" role="status" aria-live="polite"></div>
+      <form id="chat-form" class="composer">
+        <label class="sr-only" for="message-input">输入消息</label>
+        <textarea id="message-input" placeholder="有什么想一起探索的？" rows="1" maxlength="12000"></textarea>
+        <div class="composer-toolbar"><span class="input-hint">Enter 发送 <span>·</span> Shift + Enter 换行</span><div class="composer-actions"><span id="character-count">0 / 12000</span><button id="send-button" type="submit" aria-label="发送消息" disabled>↑</button></div></div>
+      </form>
+      <p class="disclaimer">AI 也可能出错，请核实重要信息。请勿输入密码或敏感信息。</p>
+    </footer>
+  </div>
+  <dialog id="clear-dialog" aria-labelledby="clear-dialog-title" aria-describedby="clear-dialog-description">
+    <h2 id="clear-dialog-title">清空对话记录？</h2>
+    <p id="clear-dialog-description">这会删除当前浏览器中的所有对话记录，且无法撤销。服务端的聊天记忆不会被删除。</p>
+    <form method="dialog"><button value="cancel" autofocus>取消</button><button value="confirm" class="confirm-clear">确认清空</button></form>
+  </dialog>
+  </section>
+  <script src="workspace.js" type="module"></script>
+  <script src="chat.js" type="module"></script>
+  <script src="skill-bootstrap.js?v=20261030-workspace"></script>
+  <script src="skills.js?v=20261105-interest-continue" type="module"></script>
+</body>
+</html>

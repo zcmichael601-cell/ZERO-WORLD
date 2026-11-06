@@ -2,3 +2,11 @@
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
 **/.obsidian/workspace.json
+
+# AI推荐项目镜像中的密钥与真实用户标识（真源在桌面仓库，禁止推送公开仓库）
+04\ AI推荐项目/ai-rec-odin-demo/ai-rec-odin-demo-main/src/main/resources/profile/ai.properties
+04\ AI推荐项目/ai-rec-odin-demo/ai-rec-odin-demo-main/src/main/resources/skills/ai-memory.properties
+
+# AI推荐项目镜像的构建产物（mvn 在镜像目录编译会产生）
+04\ AI推荐项目/ai-rec-odin-demo/**/target/
+04\ AI推荐项目/ai-rec-odin-demo/dependency-reduced-pom.xml

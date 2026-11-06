@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.jd.framework</groupId>
+        <artifactId>dong-boot-dependencies</artifactId>
+        <version>2.1.0-Beta</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>ai-rec-odin-demo-app</module>
+        <module>ai-rec-odin-demo-main</module>
+        <module>ai-rec-odin-demo-web</module>
+    </modules>
+
+    <groupId>com.jd.diviner</groupId>
+    <artifactId>ai-rec-odin-demo</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>ai-rec-odin-demo</name>
+    <description>ai-rec-odin-demo</description>
+    <properties>
+        <java.version>19</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <spring.ai.verison>1.0.0</spring.ai.verison>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.jd.diviner</groupId>
+                <artifactId>ai-rec-odin-demo-app</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jd.diviner</groupId>
+                <artifactId>ai-rec-odin-demo-main</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jd.diviner</groupId>
+                <artifactId>ai-rec-odin-demo-web</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.9.0</version>
+                <configuration>
+                    <source>19</source>
+                    <target>19</target>
+                    <encoding>UTF-8</encoding>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED  --add-opens java.base/sun.util.calendar=ALL-UNNAMED  --add-opens java.base/java.math=ALL-UNNAMED  --add-opens java.base/sun.security.action=ALL-UNNAMED  --add-exports=java.base/sun.net.util=ALL-UNNAMED</argLine>
+                    <useManifestOnlyJar>false</useManifestOnlyJar>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>libs-releases</name>
+            <url>https://artifactory.jd.com/libs-releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>snapshots</id>
+            <name>libs-snapshots</name>
+            <url>https://artifactory.jd.com/libs-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>plugins-releases</name>
+            <url>https://artifactory.jd.com/plugins-releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>snapshots</id>
+            <name>plugins-snapshots</name>
+            <url>https://artifactory.jd.com/plugins-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>

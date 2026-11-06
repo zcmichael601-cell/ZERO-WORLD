@@ -1,0 +1,10 @@
+[
+  {"keyword":"降噪耳机","category":"蓝牙耳机","tags":["音频","数码","办公"],"icon":"🎧","limit":13},
+  {"keyword":"机械键盘","category":"机械键盘","tags":["数码","办公"],"icon":"⌨️","limit":13},
+  {"keyword":"户外双肩背包","category":"户外背包","tags":["户外","运动"],"icon":"🎒","limit":13},
+  {"keyword":"跑步鞋","category":"跑步鞋","tags":["跑步","运动","健康"],"icon":"👟","limit":13},
+  {"keyword":"手冲咖啡壶","category":"手冲咖啡器具","tags":["咖啡","厨房","家居"],"icon":"☕","limit":13},
+  {"keyword":"咖啡磨豆机","category":"咖啡磨豆机","tags":["咖啡","厨房","家居"],"icon":"☕","limit":13},
+  {"keyword":"电炖锅","category":"电炖锅","tags":["厨房","家居"],"icon":"🍲","limit":13},
+  {"keyword":"护眼台灯","category":"阅读台灯","tags":["家居","办公"],"icon":"💡","limit":13}
+]

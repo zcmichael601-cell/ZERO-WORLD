@@ -1,0 +1,17 @@
+[
+  {"keyword":"手机 自营","category":"手机","tags":["手机","数码","3C"],"icon":"📱","limit":12},
+  {"keyword":"笔记本电脑","category":"笔记本电脑","tags":["电脑","笔记本电脑","数码","3C","办公"],"icon":"💻","limit":6},
+  {"keyword":"平板电脑","category":"平板电脑","tags":["平板","平板电脑","数码","3C"],"icon":"📱","limit":6},
+  {"keyword":"充电宝","category":"充电宝","tags":["充电宝","手机配件","数码","3C"],"icon":"🔋","limit":6},
+  {"keyword":"冰箱","category":"冰箱","tags":["冰箱","家电","厨房","家居"],"icon":"🧊","limit":6},
+  {"keyword":"洗衣机","category":"洗衣机","tags":["洗衣机","家电","家居"],"icon":"🧺","limit":6},
+  {"keyword":"空调","category":"空调","tags":["空调","家电","家居"],"icon":"❄️","limit":6},
+  {"keyword":"纯牛奶","category":"纯牛奶","tags":["牛奶","乳品","食品","商超"],"icon":"🥛","limit":6},
+  {"keyword":"抽纸","category":"抽纸","tags":["纸巾","抽纸","日用","商超"],"icon":"🧻","limit":6},
+  {"keyword":"洗衣液","category":"洗衣液","tags":["洗衣液","清洁","日用","商超"],"icon":"🧴","limit":6},
+  {"keyword":"大米","category":"大米","tags":["大米","粮油","食品","商超"],"icon":"🍚","limit":6},
+  {"keyword":"男士T恤","category":"男士T恤","tags":["男装","T恤","服饰"],"icon":"👕","limit":6},
+  {"keyword":"女装卫衣","category":"女装卫衣","tags":["女装","卫衣","服饰"],"icon":"👚","limit":6},
+  {"keyword":"羽绒服","category":"羽绒服","tags":["羽绒服","冬装","服饰"],"icon":"🧥","limit":6},
+  {"keyword":"运动裤","category":"运动裤","tags":["运动裤","运动","服饰"],"icon":"👖","limit":6}
+]
